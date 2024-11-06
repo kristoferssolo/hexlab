@@ -6,7 +6,7 @@ use super::Walls;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct HexTile {
-    pos: Hex,
+    pub pos: Hex,
     pub walls: Walls,
 }
 
@@ -24,6 +24,12 @@ impl HexTile {
     #[inline]
     pub fn walls(&self) -> &Walls {
         &self.walls
+    }
+
+    /// Returns position of the tile
+    #[inline]
+    pub fn pos(&self) -> Hex {
+        self.pos
     }
 }
 
