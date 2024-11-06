@@ -6,7 +6,7 @@ use super::{HexTile, Walls};
 
 /// Represents a hexagonal maze with tiles and walls
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct HexMaze {
     tiles: HashMap<Hex, HexTile>,
     layout: HexLayout,
@@ -77,19 +77,181 @@ impl HexMaze {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
-    fn maze() {
-        let layout = HexLayout::default();
-        let mut maze = HexMaze::new(layout);
+    fn new_maze() {
+        let maze = HexMaze::default();
+        assert!(maze.is_empty(), "New maze should be empty");
+        assert_eq!(maze.len(), 0, "New maze should have zero tiles");
+    }
+
+    #[test]
+    fn add_tile() {
+        let mut maze = HexMaze::default();
+        let coords = [Hex::ZERO, Hex::new(1, -1), Hex::new(-1, 1)];
+
+        // Add tiles
+        for &coord in &coords {
+            maze.add_tile(coord);
+            assert!(
+                maze.get_tile(&coord).is_some(),
+                "Tile should exist after adding"
+            );
+        }
+
+        assert_eq!(
+            maze.len(),
+            coords.len(),
+            "Maze should contain all added tiles"
+        );
+    }
+
+    #[test]
+    fn wall_operations() {
+        let mut maze = HexMaze::default();
+        let coord = Hex::ZERO;
+        maze.add_tile(coord);
+
+        // Test adding walls
+        let directions = [
+            EdgeDirection::FLAT_TOP,
+            EdgeDirection::FLAT_BOTTOM,
+            EdgeDirection::POINTY_TOP_RIGHT,
+        ];
+
+        for &direction in &directions {
+            maze.add_wall(coord, direction);
+            assert!(
+                maze.get_walls(&coord).unwrap().has(direction),
+                "Wall should exist after adding"
+            );
+        }
+    }
+
+    #[test]
+    fn tile_iteration() {
+        let mut maze = HexMaze::default();
+        let coords = [Hex::ZERO, Hex::new(1, 0), Hex::new(0, 1)];
+
+        // Add tiles
+        for &coord in &coords {
+            maze.add_tile(coord);
+        }
+
+        // Test iterator
+        let collected = maze.tiles().map(|(_, tile)| tile).collect::<Vec<_>>();
+        assert_eq!(
+            collected.len(),
+            coords.len(),
+            "Iterator should yield all tiles"
+        );
+    }
+
+    #[test]
+    fn maze_clone() {
+        let mut maze = HexMaze::default();
+        let coord = Hex::ZERO;
+        maze.add_tile(coord);
+        maze.add_wall(coord, EdgeDirection::FLAT_TOP);
+
+        // Test cloning
+        let cloned_maze = maze.clone();
+        assert_eq!(
+            maze.len(),
+            cloned_maze.len(),
+            "Cloned maze should have same size"
+        );
+        assert!(
+            cloned_maze
+                .get_walls(&coord)
+                .unwrap()
+                .has(EdgeDirection::FLAT_TOP),
+            "Cloned maze should preserve wall state"
+        );
+    }
+
+    #[test]
+    fn empty_tile_operations() {
+        let mut maze = HexMaze::default();
         let coord = Hex::ZERO;
 
-        maze.add_tile(coord);
-        assert!(maze.get_tile(&coord).is_some());
+        // Operations on non-existent tile
+        assert!(
+            maze.get_tile(&coord).is_none(),
+            "Should return None for non-existent tile"
+        );
+        assert!(
+            maze.get_walls(&coord).is_none(),
+            "Should return None for non-existent walls"
+        );
 
-        maze.add_wall(coord, EdgeDirection::FLAT_TOP_LEFT);
-        assert!(maze
-            .get_walls(&coord)
-            .unwrap()
-            .has(EdgeDirection::FLAT_TOP_LEFT));
+        // Adding wall to non-existent tile should not panic
+        maze.add_wall(coord, EdgeDirection::FLAT_TOP);
+    }
+
+    /* #[test]
+    fn multiple_tile_operations() {
+        let mut maze = HexMaze::default();
+        let coord = Hex::ZERO;
+
+        // Add same tile multiple times
+        maze.add_tile(coord);
+        let first_tile = maze.get_tile(&coord).unwrap();
+        maze.add_tile(coord);
+        let second_tile = maze.get_tile(&coord).unwrap();
+
+        assert_eq!(
+            first_tile, second_tile,
+            "Repeated add_tile should update existing tile"
+        );
+        assert_eq!(maze.len(), 1, "Repeated add_tile should not increase size");
+    } */
+
+    #[test]
+    fn maze_boundaries() {
+        let mut maze = HexMaze::default();
+        let extreme_coords = [
+            Hex::new(i32::MAX, i32::MIN),
+            Hex::new(i32::MIN, i32::MAX),
+            Hex::new(0, i32::MAX),
+            Hex::new(0, i32::MIN),
+            Hex::new(i32::MAX, 0),
+            Hex::new(i32::MIN, 0),
+        ];
+
+        // Test with extreme coordinates
+        for &coord in &extreme_coords {
+            maze.add_tile(coord);
+            assert!(
+                maze.get_tile(&coord).is_some(),
+                "Should handle extreme coordinates"
+            );
+        }
+    }
+
+    #[test]
+    fn iterator_consistency() {
+        let mut maze = HexMaze::default();
+        let coords = [Hex::ZERO, Hex::new(1, -1), Hex::new(-1, 1)];
+
+        // Add tiles
+        for &coord in &coords {
+            maze.add_tile(coord);
+        }
+
+        // Verify iterator
+        let iter_coords = maze.tiles().map(|(coord, _)| *coord).collect::<Vec<_>>();
+        assert_eq!(
+            iter_coords.len(),
+            coords.len(),
+            "Iterator should yield all coordinates"
+        );
+
+        for coord in coords {
+            assert!(
+                iter_coords.contains(&coord),
+                "Iterator should contain all added coordinates"
+            );
+        }
     }
 }
