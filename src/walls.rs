@@ -17,13 +17,13 @@ impl Walls {
     /// Adds a wall in the specified direction
     #[inline]
     pub fn add(&mut self, direction: EdgeDirection) {
-        self.0 |= Self::from(direction).0
+        self.0 |= Self::from(direction).0;
     }
 
     /// Removes a wall in the specified direction
     #[inline]
     pub fn remove(&mut self, direction: EdgeDirection) {
-        self.0 &= !Self::from(direction).0
+        self.0 &= !Self::from(direction).0;
     }
 
     /// Returns true if there is a wall in the specified direction

@@ -8,7 +8,7 @@ use super::{HexTile, Walls};
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Default)]
 pub struct HexMaze {
-    tiles: HashMap<Hex, HexTile>,
+    pub tiles: HashMap<Hex, HexTile>,
     layout: HexLayout,
 }
 
@@ -83,8 +83,8 @@ impl HexMaze {
 
     /// Returns an iterator over all tiles
     #[inline]
-    pub fn tiles(&self) -> impl Iterator<Item = (&Hex, &HexTile)> {
-        self.tiles.iter()
+    pub fn tiles(&self) -> &HashMap<Hex, HexTile> {
+        &self.tiles
     }
 
     /// Returns the number of tiles in the maze
@@ -97,6 +97,13 @@ impl HexMaze {
     #[inline]
     pub fn is_empty(&self) -> bool {
         self.tiles.is_empty()
+    }
+
+    #[inline]
+    pub fn remove_tile_wall(&mut self, coord: &Hex, direction: EdgeDirection) {
+        if let Some(tile) = self.tiles.get_mut(coord) {
+            tile.walls.remove(direction);
+        }
     }
 }
 
@@ -165,7 +172,11 @@ mod tests {
         }
 
         // Test iterator
-        let collected = maze.tiles().map(|(_, tile)| tile).collect::<Vec<_>>();
+        let collected = maze
+            .tiles()
+            .iter()
+            .map(|(_, tile)| tile)
+            .collect::<Vec<_>>();
         assert_eq!(
             collected.len(),
             coords.len(),
@@ -248,7 +259,11 @@ mod tests {
         }
 
         // Verify iterator
-        let iter_coords = maze.tiles().map(|(coord, _)| *coord).collect::<Vec<_>>();
+        let iter_coords = maze
+            .tiles()
+            .iter()
+            .map(|(coord, _)| *coord)
+            .collect::<Vec<_>>();
         assert_eq!(
             iter_coords.len(),
             coords.len(),

@@ -1,3 +1,4 @@
+mod generator;
 mod maze;
 mod tile;
 mod walls;

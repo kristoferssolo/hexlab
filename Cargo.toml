@@ -7,6 +7,7 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 hexx = { version = "0.18" }
+rand = "0.8"
 serde = { version = "1.0", features = ["derive"], optional = true }
 
 [features]
