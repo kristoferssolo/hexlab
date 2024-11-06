@@ -22,6 +22,32 @@ impl HexMaze {
         }
     }
 
+    /// Creates a new empty maze with the specified layout
+    pub fn with_layout(layout: HexLayout) -> Self {
+        Self {
+            tiles: HashMap::new(),
+            layout,
+        }
+    }
+
+    /// Creates a hexagonal maze with the given radius
+    /// Uses axial coordinates (q, r) to create a perfect hexagon
+    #[inline]
+    pub fn with_radius(mut self, radius: u32) -> Self {
+        let radius = radius as i32;
+        for q in -radius..=radius {
+            let r1 = (-radius).max(-q - radius);
+            let r2 = radius.min(-q + radius);
+            for r in r1..=r2 {
+                let pos = Hex::new(q, r);
+                let tile = HexTile::new(pos);
+                self.tiles.insert(pos, tile);
+            }
+        }
+
+        self
+    }
+
     /// Adds a new tile at the specified coordinates
     #[inline]
     pub fn add_tile(&mut self, coords: Hex) {
@@ -189,24 +215,6 @@ mod tests {
         maze.add_wall(coord, EdgeDirection::FLAT_TOP);
     }
 
-    /* #[test]
-    fn multiple_tile_operations() {
-        let mut maze = HexMaze::default();
-        let coord = Hex::ZERO;
-
-        // Add same tile multiple times
-        maze.add_tile(coord);
-        let first_tile = maze.get_tile(&coord).unwrap();
-        maze.add_tile(coord);
-        let second_tile = maze.get_tile(&coord).unwrap();
-
-        assert_eq!(
-            first_tile, second_tile,
-            "Repeated add_tile should update existing tile"
-        );
-        assert_eq!(maze.len(), 1, "Repeated add_tile should not increase size");
-    } */
-
     #[test]
     fn maze_boundaries() {
         let mut maze = HexMaze::default();
@@ -253,5 +261,45 @@ mod tests {
                 "Iterator should contain all added coordinates"
             );
         }
+    }
+
+    #[test]
+    fn maze_builder() {
+        // Test builder pattern
+        let layout = HexLayout::default();
+        let maze = HexMaze::with_layout(layout).with_radius(2);
+
+        assert_eq!(maze.len(), 19, "Radius 2 should create 19 hexes");
+        assert!(
+            maze.get_tile(&Hex::ZERO).is_some(),
+            "Center hex should exist"
+        );
+    }
+
+    #[test]
+    fn different_layouts() {
+        // Test with different layouts
+        let layouts = [
+            HexLayout {
+                orientation: hexx::HexOrientation::Flat,
+                ..Default::default()
+            },
+            HexLayout {
+                orientation: hexx::HexOrientation::Pointy,
+                ..Default::default()
+            },
+        ];
+
+        for layout in layouts {
+            let maze = HexMaze::with_layout(layout).with_radius(1);
+            assert_eq!(maze.len(), 7, "Should work with different layouts");
+        }
+    }
+
+    #[test]
+    fn empty_maze() {
+        let layout = HexLayout::default();
+        let maze = HexMaze::with_layout(layout);
+        assert!(maze.is_empty(), "New maze should be empty");
     }
 }

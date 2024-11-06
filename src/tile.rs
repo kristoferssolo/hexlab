@@ -27,6 +27,15 @@ impl HexTile {
     }
 }
 
+impl From<Hex> for HexTile {
+    fn from(value: Hex) -> Self {
+        Self {
+            pos: value,
+            walls: Walls::default(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use hexx::EdgeDirection;
