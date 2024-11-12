@@ -1,39 +1,28 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    ops::{Deref, DerefMut},
+};
 
-use hexx::{EdgeDirection, Hex, HexLayout};
+use hexx::{EdgeDirection, Hex};
 
 use super::{HexTile, Walls};
 
 /// Represents a hexagonal maze with tiles and walls
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Default)]
-pub struct HexMaze {
-    pub tiles: HashMap<Hex, HexTile>,
-    layout: HexLayout,
-}
+pub struct HexMaze(HashMap<Hex, HexTile>);
 
 impl HexMaze {
-    /// Creates a new empty maze with the specified layout
+    /// Creates a new empty maze
     #[inline]
-    pub fn new(layout: HexLayout) -> Self {
-        Self {
-            tiles: HashMap::new(),
-            layout,
-        }
-    }
-
-    /// Creates a new empty maze with the specified layout
-    pub fn with_layout(layout: HexLayout) -> Self {
-        Self {
-            tiles: HashMap::new(),
-            layout,
-        }
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// Creates a hexagonal maze with the given radius
     /// Uses axial coordinates (q, r) to create a perfect hexagon
-    #[inline]
-    pub fn with_radius(mut self, radius: u32) -> Self {
+    pub fn with_radius(radius: u32) -> Self {
+        let mut maze = Self::default();
         let radius = radius as i32;
         for q in -radius..=radius {
             let r1 = (-radius).max(-q - radius);
@@ -41,24 +30,22 @@ impl HexMaze {
             for r in r1..=r2 {
                 let pos = Hex::new(q, r);
                 let tile = HexTile::new(pos);
-                self.tiles.insert(pos, tile);
+                maze.0.insert(pos, tile);
             }
         }
 
-        self
+        maze
     }
 
     /// Adds a new tile at the specified coordinates
-    #[inline]
     pub fn add_tile(&mut self, coords: Hex) {
         let tile = HexTile::new(coords);
-        self.tiles.insert(coords, tile);
+        self.0.insert(coords, tile);
     }
 
     /// Adds a wall in the specified direction at the given coordinates
-    #[inline]
     pub fn add_wall(&mut self, coord: Hex, direction: EdgeDirection) {
-        if let Some(tile) = self.tiles.get_mut(&coord) {
+        if let Some(tile) = self.0.get_mut(&coord) {
             tile.walls.add(direction)
         }
     }
@@ -66,44 +53,43 @@ impl HexMaze {
     /// Returns a reference to the tile at the specified coordinates
     #[inline]
     pub fn get_tile(&self, coord: &Hex) -> Option<&HexTile> {
-        self.tiles.get(coord)
+        self.0.get(coord)
     }
 
     /// Returns a reference to the walls at the specified coordinates
-    #[inline]
     pub fn get_walls(&self, coord: &Hex) -> Option<&Walls> {
-        self.tiles.get(coord).map(|tile| tile.walls())
-    }
-
-    /// Returns the layout of the maze
-    #[inline]
-    pub fn layout(&self) -> &HexLayout {
-        &self.layout
-    }
-
-    /// Returns an iterator over all tiles
-    #[inline]
-    pub fn tiles(&self) -> &HashMap<Hex, HexTile> {
-        &self.tiles
+        self.0.get(coord).map(|tile| tile.walls())
     }
 
     /// Returns the number of tiles in the maze
     #[inline]
     pub fn len(&self) -> usize {
-        self.tiles.len()
+        self.0.len()
     }
 
     /// Returns true if the maze is empty
     #[inline]
     pub fn is_empty(&self) -> bool {
-        self.tiles.is_empty()
+        self.0.is_empty()
     }
 
-    #[inline]
     pub fn remove_tile_wall(&mut self, coord: &Hex, direction: EdgeDirection) {
-        if let Some(tile) = self.tiles.get_mut(coord) {
+        if let Some(tile) = self.0.get_mut(coord) {
             tile.walls.remove(direction);
         }
+    }
+}
+
+impl Deref for HexMaze {
+    type Target = HashMap<Hex, HexTile>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for HexMaze {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 
@@ -155,7 +141,7 @@ mod tests {
         for &direction in &directions {
             maze.add_wall(coord, direction);
             assert!(
-                maze.get_walls(&coord).unwrap().has(direction),
+                maze.get_walls(&coord).unwrap().contains(direction),
                 "Wall should exist after adding"
             );
         }
@@ -172,11 +158,7 @@ mod tests {
         }
 
         // Test iterator
-        let collected = maze
-            .tiles()
-            .iter()
-            .map(|(_, tile)| tile)
-            .collect::<Vec<_>>();
+        let collected = maze.iter().map(|(_, tile)| tile).collect::<Vec<_>>();
         assert_eq!(
             collected.len(),
             coords.len(),
@@ -202,7 +184,7 @@ mod tests {
             cloned_maze
                 .get_walls(&coord)
                 .unwrap()
-                .has(EdgeDirection::FLAT_TOP),
+                .contains(EdgeDirection::FLAT_TOP),
             "Cloned maze should preserve wall state"
         );
     }
@@ -259,11 +241,7 @@ mod tests {
         }
 
         // Verify iterator
-        let iter_coords = maze
-            .tiles()
-            .iter()
-            .map(|(coord, _)| *coord)
-            .collect::<Vec<_>>();
+        let iter_coords = maze.iter().map(|(coord, _)| *coord).collect::<Vec<_>>();
         assert_eq!(
             iter_coords.len(),
             coords.len(),
@@ -281,8 +259,7 @@ mod tests {
     #[test]
     fn maze_builder() {
         // Test builder pattern
-        let layout = HexLayout::default();
-        let maze = HexMaze::with_layout(layout).with_radius(2);
+        let maze = HexMaze::with_radius(2);
 
         assert_eq!(maze.len(), 19, "Radius 2 should create 19 hexes");
         assert!(
@@ -292,29 +269,8 @@ mod tests {
     }
 
     #[test]
-    fn different_layouts() {
-        // Test with different layouts
-        let layouts = [
-            HexLayout {
-                orientation: hexx::HexOrientation::Flat,
-                ..Default::default()
-            },
-            HexLayout {
-                orientation: hexx::HexOrientation::Pointy,
-                ..Default::default()
-            },
-        ];
-
-        for layout in layouts {
-            let maze = HexMaze::with_layout(layout).with_radius(1);
-            assert_eq!(maze.len(), 7, "Should work with different layouts");
-        }
-    }
-
-    #[test]
     fn empty_maze() {
-        let layout = HexLayout::default();
-        let maze = HexMaze::with_layout(layout);
+        let maze = HexMaze::default();
         assert!(maze.is_empty(), "New maze should be empty");
     }
 }

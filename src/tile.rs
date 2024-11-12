@@ -1,10 +1,19 @@
+use std::fmt::Display;
+
 use hexx::Hex;
 
+#[cfg(feature = "bevy")]
+use hexx::HexLayout;
+
 use super::Walls;
+#[cfg(feature = "bevy")]
+use bevy::prelude::*;
 
 /// Represents a single hexagonal tile in the maze
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "bevy", derive(Reflect, Component))]
+#[cfg_attr(feature = "bevy", reflect(Component))]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct HexTile {
     pub pos: Hex,
     pub walls: Walls,
@@ -12,7 +21,6 @@ pub struct HexTile {
 
 impl HexTile {
     /// Creates a new tile with pos and default walls
-    #[inline]
     pub fn new(pos: Hex) -> Self {
         Self {
             pos,
@@ -31,6 +39,17 @@ impl HexTile {
     pub fn pos(&self) -> Hex {
         self.pos
     }
+
+    #[cfg(feature = "bevy")]
+    pub fn to_vec2(&self, layout: &HexLayout) -> Vec2 {
+        layout.hex_to_world_pos(self.pos)
+    }
+
+    #[cfg(feature = "bevy")]
+    pub fn to_vec3(&self, layout: &HexLayout) -> Vec3 {
+        let pos = self.to_vec2(layout);
+        Vec3::new(pos.x, 0., pos.y)
+    }
 }
 
 impl From<Hex> for HexTile {
@@ -39,6 +58,12 @@ impl From<Hex> for HexTile {
             pos: value,
             walls: Walls::default(),
         }
+    }
+}
+
+impl Display for HexTile {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({},{})", self.pos.x, self.pos.y)
     }
 }
 
@@ -82,34 +107,14 @@ mod tests {
         // Modify walls
         tile.walls.remove(EdgeDirection::FLAT_TOP);
         assert!(
-            !tile.walls.has(EdgeDirection::FLAT_TOP),
+            !tile.walls.contains(EdgeDirection::FLAT_TOP),
             "Wall should be removed"
         );
 
         tile.walls.add(EdgeDirection::FLAT_TOP);
         assert!(
-            tile.walls.has(EdgeDirection::FLAT_TOP),
+            tile.walls.contains(EdgeDirection::FLAT_TOP),
             "Wall should be added back"
-        );
-    }
-
-    #[test]
-    fn tile_copy() {
-        let pos = Hex::new(-1, 2);
-        let tile = HexTile::new(pos);
-
-        // Test Copy trait
-        let copied_tile = tile;
-        assert_eq!(tile, copied_tile, "Copied tile should equal original");
-
-        // Verify both tiles are still usable
-        assert_eq!(
-            tile.pos, copied_tile.pos,
-            "Positions should match after copy"
-        );
-        assert_eq!(
-            tile.walls, copied_tile.walls,
-            "Walls should match after copy"
         );
     }
 

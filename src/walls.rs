@@ -1,19 +1,20 @@
-use std::ops::{Deref, DerefMut};
+use std::{
+    fmt::Debug,
+    ops::{Deref, DerefMut},
+};
 
+#[cfg(feature = "bevy")]
+use bevy::prelude::*;
 use hexx::EdgeDirection;
 
 /// Represents the walls of a hexagonal tile using bit flags
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "bevy", derive(Reflect, Component))]
+#[cfg_attr(feature = "bevy", reflect(Component))]
 pub struct Walls(u8);
 
 impl Walls {
-    /// Creates a new walls configuration with all walls
-    #[inline]
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     /// Adds a wall in the specified direction
     #[inline]
     pub fn add(&mut self, direction: EdgeDirection) {
@@ -28,8 +29,11 @@ impl Walls {
 
     /// Returns true if there is a wall in the specified direction
     #[inline]
-    pub fn has(&self, direction: EdgeDirection) -> bool {
-        self.0 & Self::from(direction).0 != 0
+    pub fn contains<T>(&self, other: T) -> bool
+    where
+        T: Into<Self>,
+    {
+        self.0 & other.into().0 != 0
     }
 
     /// Returns the raw bit representation of the walls
@@ -41,8 +45,13 @@ impl Walls {
 
 impl From<EdgeDirection> for Walls {
     fn from(value: EdgeDirection) -> Self {
-        let bits = 1 << value.index();
-        Self(bits)
+        Self(1 << value.index())
+    }
+}
+
+impl From<u8> for Walls {
+    fn from(value: u8) -> Self {
+        Self(1 << value)
     }
 }
 
@@ -72,11 +81,11 @@ mod tests {
 
     #[test]
     fn new_walls() {
-        let walls = Walls::new();
+        let walls = Walls::default();
         // All walls should be present by default
         for direction in EdgeDirection::iter() {
             assert!(
-                walls.has(direction),
+                walls.contains(direction),
                 "Wall should exist in direction {:?}",
                 direction
             );
@@ -85,42 +94,42 @@ mod tests {
 
     #[test]
     fn add_remove_single_wall() {
-        let mut walls = Walls::new();
+        let mut walls = Walls::default();
 
         // Remove and verify each wall
         walls.remove(EdgeDirection::FLAT_TOP);
-        assert!(!walls.has(EdgeDirection::FLAT_TOP));
+        assert!(!walls.contains(EdgeDirection::FLAT_TOP));
 
         // Add back and verify
         walls.add(EdgeDirection::FLAT_TOP);
-        assert!(walls.has(EdgeDirection::FLAT_TOP));
+        assert!(walls.contains(EdgeDirection::FLAT_TOP));
     }
 
     #[test]
     fn multiple_operations() {
-        let mut walls = Walls::new();
+        let mut walls = Walls::default();
 
         // Remove multiple walls
         walls.remove(EdgeDirection::FLAT_TOP);
         walls.remove(EdgeDirection::FLAT_BOTTOM);
 
         // Verify removed walls
-        assert!(!walls.has(EdgeDirection::FLAT_TOP));
-        assert!(!walls.has(EdgeDirection::FLAT_BOTTOM));
+        assert!(!walls.contains(EdgeDirection::FLAT_TOP));
+        assert!(!walls.contains(EdgeDirection::FLAT_BOTTOM));
 
         // Verify other walls still exist
-        assert!(walls.has(EdgeDirection::FLAT_TOP_RIGHT));
-        assert!(walls.has(EdgeDirection::FLAT_TOP_LEFT));
+        assert!(walls.contains(EdgeDirection::FLAT_TOP_RIGHT));
+        assert!(walls.contains(EdgeDirection::FLAT_TOP_LEFT));
 
         // Add back one wall
         walls.add(EdgeDirection::FLAT_TOP);
-        assert!(walls.has(EdgeDirection::FLAT_TOP));
-        assert!(!walls.has(EdgeDirection::FLAT_BOTTOM));
+        assert!(walls.contains(EdgeDirection::FLAT_TOP));
+        assert!(!walls.contains(EdgeDirection::FLAT_BOTTOM));
     }
 
     #[test]
     fn bit_patterns() {
-        let mut walls = Walls::new();
+        let mut walls = Walls::default();
         assert_eq!(
             walls.as_bits(),
             0b111111,
@@ -136,7 +145,7 @@ mod tests {
 
     #[test]
     fn remove_all_walls() {
-        let mut walls = Walls::new();
+        let mut walls = Walls::default();
 
         // Remove all walls
         for direction in EdgeDirection::iter() {
@@ -149,7 +158,7 @@ mod tests {
         // Verify each direction
         for direction in EdgeDirection::iter() {
             assert!(
-                !walls.has(direction),
+                !walls.contains(direction),
                 "No wall should exist in direction {:?}",
                 direction
             );
@@ -158,7 +167,7 @@ mod tests {
 
     #[test]
     fn deref_operations() {
-        let mut walls = Walls::new();
+        let mut walls = Walls::default();
 
         // Test Deref
         let bits: &u8 = walls.deref();
@@ -171,7 +180,7 @@ mod tests {
 
     #[test]
     fn idempotent_operations() {
-        let mut walls = Walls::new();
+        let mut walls = Walls::default();
 
         // Adding twice shouldn't change the result
         walls.add(EdgeDirection::FLAT_TOP);
