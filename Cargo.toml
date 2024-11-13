@@ -1,12 +1,21 @@
 [package]
 name = "hexlab"
 authors = ["Kristofers Solo <dev@kristofers.xyz>"]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
-description = "A hexagonal maze library"
+description = "A hexagonal maze generation and manipulation library"
 repository = "https://github.com/kristoferssolo/hexlab"
+documentation = "https://docs.rs/hexlab"
+homepage = "https://github.com/kristoferssolo/hexlab"
 license = "MIT OR Apache-2.0"
-keywords = ["maze", "hex", "hexagons"]
+keywords = ["maze", "hex", "hexagons", "generation", "game"]
+categories = [
+  "algorithms",
+  "game-development",
+  "mathematics",
+  "data-structures",
+]
+exclude = ["/.github", "/.gitignore", "/tests", "*.png", "*.md"]
 
 [dependencies]
 bevy = { version = "0.14", optional = true }
@@ -14,10 +23,26 @@ hexx = { version = "0.18" }
 rand = "0.8"
 rand_chacha = "0.3"
 serde = { version = "1.0", features = ["derive"], optional = true }
+thiserror = "2.0"
+
+
+[dev-dependencies]
 
 [features]
 default = []
 serde = ["dep:serde", "hexx/serde", "rand_chacha/serde"]
 bevy = ["dep:bevy", "hexx/bevy_reflect"]
+full = ["serde", "bevy"]
 
-[dev-dependencies]
+[profile.dev]
+opt-level = 1 # Better compile times with some optimization
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+strip = true    # Smaller binary size
+panic = "abort" # Smaller binary size
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
