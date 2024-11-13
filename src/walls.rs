@@ -49,6 +49,16 @@ impl From<EdgeDirection> for Walls {
     }
 }
 
+impl From<[EdgeDirection; 6]> for Walls {
+    fn from(value: [EdgeDirection; 6]) -> Self {
+        let mut walls = 0u8;
+        for direction in value {
+            walls |= 1 << direction.index();
+        }
+        Self(walls)
+    }
+}
+
 impl From<u8> for Walls {
     fn from(value: u8) -> Self {
         Self(1 << value)

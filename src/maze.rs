@@ -9,7 +9,7 @@ use super::{HexTile, Walls};
 
 /// Represents a hexagonal maze with tiles and walls
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct HexMaze(HashMap<Hex, HexTile>);
 
 impl HexMaze {
