@@ -1,5 +1,49 @@
+use std::collections::HashSet;
+
+use hexx::{EdgeDirection, Hex};
+use rand::{seq::SliceRandom, thread_rng, Rng, RngCore, SeedableRng};
+use rand_chacha::ChaCha8Rng;
+
+use crate::HexMaze;
+
 #[derive(Debug, Clone, Copy, Default)]
 pub enum GeneratorType {
     #[default]
     RecursiveBacktracking,
+}
+
+pub(crate) fn generate_backtracking(maze: &mut HexMaze, start_pos: Option<Hex>, seed: Option<u64>) {
+    if maze.is_empty() {
+        return;
+    }
+
+    let start = start_pos.unwrap_or(Hex::ZERO);
+
+    let mut visited = HashSet::new();
+
+    let mut rng: Box<dyn RngCore> = match seed {
+        Some(seed) => Box::new(ChaCha8Rng::seed_from_u64(seed)),
+        None => Box::new(thread_rng()),
+    };
+    recursive_backtrack(maze, start, &mut visited, &mut rng);
+}
+
+fn recursive_backtrack<R: Rng>(
+    maze: &mut HexMaze,
+    current: Hex,
+    visited: &mut HashSet<Hex>,
+    rng: &mut R,
+) {
+    visited.insert(current);
+    let mut directions = EdgeDirection::ALL_DIRECTIONS;
+    directions.shuffle(rng);
+
+    for direction in directions {
+        let neighbor = current + direction;
+        if maze.get_tile(&neighbor).is_some() && !visited.contains(&neighbor) {
+            maze.remove_tile_wall(&current, direction);
+            maze.remove_tile_wall(&neighbor, direction.const_neg());
+            recursive_backtrack(maze, neighbor, visited, rng);
+        }
+    }
 }
