@@ -1,10 +1,9 @@
-use hexx::Hex;
-use thiserror::Error;
-
 use crate::{
     generator::{generate_backtracking, GeneratorType},
     HexMaze,
 };
+use hexx::Hex;
+use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum MazeBuilderError {
