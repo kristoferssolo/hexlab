@@ -15,8 +15,8 @@ use bevy::prelude::*;
 #[cfg_attr(feature = "bevy", reflect(Component))]
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct HexTile {
-    pub pos: Hex,
-    pub walls: Walls,
+    pub(crate) pos: Hex,
+    pub(crate) walls: Walls,
 }
 
 impl HexTile {

@@ -19,24 +19,6 @@ impl HexMaze {
         Self::default()
     }
 
-    /// Creates a hexagonal maze with the given radius
-    /// Uses axial coordinates (q, r) to create a perfect hexagon
-    pub fn with_radius(radius: u32) -> Self {
-        let mut maze = Self::default();
-        let radius = radius as i32;
-        for q in -radius..=radius {
-            let r1 = (-radius).max(-q - radius);
-            let r2 = radius.min(-q + radius);
-            for r in r1..=r2 {
-                let pos = Hex::new(q, r);
-                let tile = HexTile::new(pos);
-                maze.0.insert(pos, tile);
-            }
-        }
-
-        maze
-    }
-
     /// Adds a new tile at the specified coordinates
     pub fn add_tile(&mut self, coords: Hex) {
         let tile = HexTile::new(coords);
@@ -254,18 +236,6 @@ mod tests {
                 "Iterator should contain all added coordinates"
             );
         }
-    }
-
-    #[test]
-    fn maze_builder() {
-        // Test builder pattern
-        let maze = HexMaze::with_radius(2);
-
-        assert_eq!(maze.len(), 19, "Radius 2 should create 19 hexes");
-        assert!(
-            maze.get_tile(&Hex::ZERO).is_some(),
-            "Center hex should exist"
-        );
     }
 
     #[test]

@@ -17,14 +17,20 @@ pub struct Walls(u8);
 impl Walls {
     /// Adds a wall in the specified direction
     #[inline]
-    pub fn add(&mut self, direction: EdgeDirection) {
-        self.0 |= Self::from(direction).0;
+    pub fn add<T>(&mut self, direction: T)
+    where
+        T: Into<Self>,
+    {
+        self.0 |= direction.into().0;
     }
 
     /// Removes a wall in the specified direction
     #[inline]
-    pub fn remove(&mut self, direction: EdgeDirection) {
-        self.0 &= !Self::from(direction).0;
+    pub fn remove<T>(&mut self, direction: T)
+    where
+        T: Into<Self>,
+    {
+        self.0 &= !direction.into().0;
     }
 
     /// Returns true if there is a wall in the specified direction
