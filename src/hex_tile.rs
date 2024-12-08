@@ -21,6 +21,7 @@ pub struct HexTile {
 
 impl HexTile {
     /// Creates a new tile with pos and default walls
+    #[must_use]
     pub fn new(pos: Hex) -> Self {
         Self {
             pos,
@@ -30,22 +31,28 @@ impl HexTile {
 
     /// Returns a reference to the tile's walls
     #[inline]
-    pub fn walls(&self) -> &Walls {
+    #[must_use]
+    pub const fn walls(&self) -> &Walls {
         &self.walls
     }
 
     /// Returns position of the tile
     #[inline]
-    pub fn pos(&self) -> Hex {
+    #[must_use]
+    pub const fn pos(&self) -> Hex {
         self.pos
     }
 
     #[cfg(feature = "bevy")]
+    #[inline]
+    #[must_use]
     pub fn to_vec2(&self, layout: &HexLayout) -> Vec2 {
         layout.hex_to_world_pos(self.pos)
     }
 
     #[cfg(feature = "bevy")]
+    #[inline]
+    #[must_use]
     pub fn to_vec3(&self, layout: &HexLayout) -> Vec3 {
         let pos = self.to_vec2(layout);
         Vec3::new(pos.x, 0., pos.y)

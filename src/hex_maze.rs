@@ -15,6 +15,7 @@ pub struct HexMaze(HashMap<Hex, HexTile>);
 impl HexMaze {
     /// Creates a new empty maze
     #[inline]
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
@@ -28,29 +29,32 @@ impl HexMaze {
     /// Adds a wall in the specified direction at the given coordinates
     pub fn add_wall(&mut self, coord: Hex, direction: EdgeDirection) {
         if let Some(tile) = self.0.get_mut(&coord) {
-            tile.walls.add(direction)
+            tile.walls.add(direction);
         }
     }
 
     /// Returns a reference to the tile at the specified coordinates
     #[inline]
+    #[must_use]
     pub fn get_tile(&self, coord: &Hex) -> Option<&HexTile> {
         self.0.get(coord)
     }
 
     /// Returns a reference to the walls at the specified coordinates
     pub fn get_walls(&self, coord: &Hex) -> Option<&Walls> {
-        self.0.get(coord).map(|tile| tile.walls())
+        self.0.get(coord).map(HexTile::walls)
     }
 
     /// Returns the number of tiles in the maze
     #[inline]
+    #[must_use]
     pub fn len(&self) -> usize {
         self.0.len()
     }
 
     /// Returns true if the maze is empty
     #[inline]
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }

@@ -76,6 +76,7 @@ pub enum MazeBuilderError {
 ///     .build()
 ///     .expect("Failed to create maze");
 /// ```
+#[allow(clippy::module_name_repetitions)]
 #[derive(Default)]
 pub struct MazeBuilder {
     radius: Option<u32>,
@@ -87,6 +88,7 @@ pub struct MazeBuilder {
 impl MazeBuilder {
     /// Creates a new [`MazeBuilder`] instance.
     #[inline]
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
@@ -97,7 +99,8 @@ impl MazeBuilder {
     ///
     /// * `radius` - The size of the maze (number of tiles along one edge).
     #[inline]
-    pub fn with_radius(mut self, radius: u32) -> Self {
+    #[must_use]
+    pub const fn with_radius(mut self, radius: u32) -> Self {
         self.radius = Some(radius);
         self
     }
@@ -108,7 +111,8 @@ impl MazeBuilder {
     ///
     /// * `seed` - The random seed value.
     #[inline]
-    pub fn with_seed(mut self, seed: u64) -> Self {
+    #[must_use]
+    pub const fn with_seed(mut self, seed: u64) -> Self {
         self.seed = Some(seed);
         self
     }
@@ -121,13 +125,15 @@ impl MazeBuilder {
     ///
     /// * `generator_type` - The maze generation algorithm to use.
     #[inline]
-    pub fn with_generator(mut self, generator_type: GeneratorType) -> Self {
+    #[must_use]
+    pub const fn with_generator(mut self, generator_type: GeneratorType) -> Self {
         self.generator_type = generator_type;
         self
     }
 
     #[inline]
-    pub fn with_start_position(mut self, pos: Hex) -> Self {
+    #[must_use]
+    pub const fn with_start_position(mut self, pos: Hex) -> Self {
         self.start_position = Some(pos);
         self
     }
@@ -159,7 +165,7 @@ impl MazeBuilder {
     /// ```
     pub fn build(self) -> Result<HexMaze, MazeBuilderError> {
         let radius = self.radius.ok_or(MazeBuilderError::NoRadius)?;
-        let mut maze = self.create_hex_maze(radius);
+        let mut maze = create_hex_maze(radius);
 
         if let Some(start_pos) = self.start_position {
             if maze.get_tile(&start_pos).is_none() {
@@ -174,28 +180,28 @@ impl MazeBuilder {
         Ok(maze)
     }
 
-    fn create_hex_maze(&self, radius: u32) -> HexMaze {
-        let mut maze = HexMaze::new();
-        let radius = radius as i32;
-        for q in -radius..=radius {
-            let r1 = (-radius).max(-q - radius);
-            let r2 = radius.min(-q + radius);
-            for r in r1..=r2 {
-                let pos = Hex::new(q, r);
-                maze.add_tile(pos);
-            }
-        }
-
-        maze
-    }
-
     fn generate_maze(&self, maze: &mut HexMaze) {
         match self.generator_type {
             GeneratorType::RecursiveBacktracking => {
-                generate_backtracking(maze, self.start_position, self.seed)
+                generate_backtracking(maze, self.start_position, self.seed);
             }
         }
     }
+}
+fn create_hex_maze(radius: u32) -> HexMaze {
+    let mut maze = HexMaze::new();
+    let radius = i32::try_from(radius).unwrap_or(5);
+
+    for q in -radius..=radius {
+        let r1 = (-radius).max(-q - radius);
+        let r2 = radius.min(-q + radius);
+        for r in r1..=r2 {
+            let pos = Hex::new(q, r);
+            maze.add_tile(pos);
+        }
+    }
+
+    maze
 }
 
 #[cfg(test)]

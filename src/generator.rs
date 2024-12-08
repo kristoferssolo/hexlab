@@ -6,13 +6,14 @@ use rand_chacha::ChaCha8Rng;
 
 use crate::HexMaze;
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Clone, Copy, Default)]
 pub enum GeneratorType {
     #[default]
     RecursiveBacktracking,
 }
 
-pub(crate) fn generate_backtracking(maze: &mut HexMaze, start_pos: Option<Hex>, seed: Option<u64>) {
+pub fn generate_backtracking(maze: &mut HexMaze, start_pos: Option<Hex>, seed: Option<u64>) {
     if maze.is_empty() {
         return;
     }
@@ -21,10 +22,10 @@ pub(crate) fn generate_backtracking(maze: &mut HexMaze, start_pos: Option<Hex>, 
 
     let mut visited = HashSet::new();
 
-    let mut rng: Box<dyn RngCore> = match seed {
-        Some(seed) => Box::new(ChaCha8Rng::seed_from_u64(seed)),
-        None => Box::new(thread_rng()),
-    };
+    let mut rng: Box<dyn RngCore> = seed.map_or_else(
+        || Box::new(thread_rng()) as Box<dyn RngCore>,
+        |seed| Box::new(ChaCha8Rng::seed_from_u64(seed)) as Box<dyn RngCore>,
+    );
     recursive_backtrack(maze, start, &mut visited, &mut rng);
 }
 

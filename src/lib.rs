@@ -1,13 +1,13 @@
 mod builder;
 mod generator;
-mod maze;
-mod tile;
+mod hex_maze;
+mod hex_tile;
 mod walls;
 
 pub use builder::{MazeBuilder, MazeBuilderError};
 pub use generator::GeneratorType;
-pub use maze::HexMaze;
-pub use tile::HexTile;
+pub use hex_maze::HexMaze;
+pub use hex_tile::HexTile;
 pub use walls::Walls;
 
 pub mod prelude {

@@ -62,6 +62,8 @@ impl Walls {
     /// assert!(walls.is_closed());
     /// assert_eq!(walls.count(), 6);
     /// ```
+    #[inline]
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
@@ -77,7 +79,9 @@ impl Walls {
     /// assert!(walls.is_empty());
     /// assert_eq!(walls.count(), 0);
     /// ```
-    pub fn empty() -> Self {
+    #[inline]
+    #[must_use]
+    pub const fn empty() -> Self {
         Self(0)
     }
 
@@ -95,7 +99,9 @@ impl Walls {
     /// let walls = Walls::new();
     /// assert!(!walls.is_empty());
     /// ```
-    pub fn is_empty(&self) -> bool {
+    #[inline]
+    #[must_use]
+    pub const fn is_empty(&self) -> bool {
         self.0 == 0
     }
 
@@ -193,7 +199,8 @@ impl Walls {
     /// assert_eq!(walls.as_bits(), 0b111111);
     /// ```
     #[inline]
-    pub fn as_bits(&self) -> u8 {
+    #[must_use]
+    pub const fn as_bits(&self) -> u8 {
         self.0
     }
 
@@ -215,8 +222,9 @@ impl Walls {
     /// assert_eq!(walls.count(), 2);
     /// ```
     #[inline]
+    #[must_use]
     pub fn count(&self) -> u8 {
-        self.0.count_ones() as u8
+        u8::try_from(self.0.count_ones()).unwrap_or_default()
     }
 
     /// Returns all possible directions as a `Walls` value
@@ -234,8 +242,9 @@ impl Walls {
     /// assert!(all_walls.is_closed());
     /// ```
     #[inline]
-    pub fn all_directions() -> Self {
-        Self(0b111111)
+    #[must_use]
+    pub const fn all_directions() -> Self {
+        Self(0b11_1111)
     }
 
     /// Toggles a wall in the specified direction.
@@ -293,6 +302,7 @@ impl Walls {
     /// assert!(walls.is_closed());
     /// ```
     #[inline]
+    #[must_use]
     pub fn is_closed(&self) -> bool {
         self.count() == 6
     }
@@ -354,7 +364,7 @@ impl<const N: usize> From<[EdgeDirection; N]> for Walls {
 
 impl Default for Walls {
     fn default() -> Self {
-        Self(0b111111)
+        Self(0b11_1111)
     }
 }
 
