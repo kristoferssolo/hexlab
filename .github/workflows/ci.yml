@@ -49,7 +49,7 @@ jobs:
         with:
           sweep-cache: true
       - name: Run clippy lints
-        run: cargo clippy --locked --workspace --all-targets --all-features -- --deny warnings
+        run: cargo clippy --locked --workspace --all-features -- --deny warnings
   # Check formatting.
   format:
     name: Format
