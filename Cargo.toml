@@ -21,7 +21,6 @@ exclude = ["/.github", "/.gitignore", "/tests", "*.png", "*.md"]
 bevy = { version = "0.15", optional = true }
 hexx = { version = "0.19" }
 rand = "0.8"
-rand_chacha = "0.3"
 serde = { version = "1.0", features = ["derive"], optional = true }
 thiserror = "2.0"
 
@@ -30,7 +29,7 @@ thiserror = "2.0"
 
 [features]
 default = []
-serde = ["dep:serde", "hexx/serde", "rand_chacha/serde"]
+serde = ["dep:serde", "hexx/serde"]
 bevy = ["bevy_reflect"]
 bevy_reflect = ["dep:bevy", "hexx/bevy_reflect"]
 full = ["serde", "bevy"]

@@ -1,8 +1,7 @@
 #[cfg(feature = "bevy_reflect")]
 use bevy::prelude::*;
 use hexx::{EdgeDirection, Hex};
-use rand::{seq::SliceRandom, thread_rng, Rng, RngCore, SeedableRng};
-use rand_chacha::ChaCha8Rng;
+use rand::{rngs::StdRng, seq::SliceRandom, thread_rng, Rng, RngCore, SeedableRng};
 use std::collections::HashSet;
 
 use crate::HexMaze;
@@ -29,8 +28,9 @@ pub fn generate_backtracking(maze: &mut HexMaze, start_pos: Option<Hex>, seed: O
 
     let mut rng: Box<dyn RngCore> = seed.map_or_else(
         || Box::new(thread_rng()) as Box<dyn RngCore>,
-        |seed| Box::new(ChaCha8Rng::seed_from_u64(seed)) as Box<dyn RngCore>,
+        |seed| Box::new(StdRng::seed_from_u64(seed)) as Box<dyn RngCore>,
     );
+
     recursive_backtrack(maze, start, &mut visited, &mut rng);
 }
 
