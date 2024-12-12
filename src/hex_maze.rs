@@ -1,14 +1,18 @@
-use std::{
-    collections::HashMap,
-    ops::{Deref, DerefMut},
-};
-
-use hexx::{EdgeDirection, Hex};
-
 use super::{HexTile, Walls};
+#[cfg(feature = "bevy_reflect")]
+use bevy::prelude::*;
+#[cfg(feature = "bevy_reflect")]
+use bevy::utils::HashMap;
+use hexx::{EdgeDirection, Hex};
+#[cfg(not(feature = "bevy_reflect"))]
+use std::collections::HashMap;
+use std::ops::{Deref, DerefMut};
 
 /// Represents a hexagonal maze with tiles and walls
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
+#[cfg_attr(feature = "bevy", derive(Component))]
+#[cfg_attr(feature = "bevy", reflect(Component))]
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct HexMaze(HashMap<Hex, HexTile>);
 

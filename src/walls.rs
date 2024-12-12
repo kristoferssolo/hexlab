@@ -1,5 +1,5 @@
-#[cfg(feature = "bevy")]
-use bevy::prelude::{Component, Reflect, ReflectComponent};
+#[cfg(feature = "bevy_reflect")]
+use bevy::prelude::*;
 use hexx::EdgeDirection;
 
 /// A bit-flag representation of walls in a hexagonal tile.
@@ -43,9 +43,10 @@ use hexx::EdgeDirection;
 /// assert!(!walls.contains(EdgeDirection::FLAT_SOUTH));
 /// ```
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "bevy", derive(Reflect, Component))]
+#[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
+#[cfg_attr(feature = "bevy", derive(Component))]
 #[cfg_attr(feature = "bevy", reflect(Component))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Walls(u8);
 
 impl Walls {

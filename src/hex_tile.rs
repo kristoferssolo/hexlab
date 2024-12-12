@@ -1,17 +1,15 @@
-use std::fmt::Display;
-
-use hexx::Hex;
-
-#[cfg(feature = "bevy")]
-use hexx::HexLayout;
-
 use super::Walls;
-#[cfg(feature = "bevy")]
+#[cfg(feature = "bevy_reflect")]
 use bevy::prelude::*;
+use hexx::Hex;
+#[cfg(feature = "bevy_reflect")]
+use hexx::HexLayout;
+use std::fmt::Display;
 
 /// Represents a single hexagonal tile in the maze
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(feature = "bevy", derive(Reflect, Component))]
+#[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
+#[cfg_attr(feature = "bevy", derive(Component))]
 #[cfg_attr(feature = "bevy", reflect(Component))]
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct HexTile {
@@ -43,14 +41,14 @@ impl HexTile {
         self.pos
     }
 
-    #[cfg(feature = "bevy")]
+    #[cfg(feature = "bevy_reflect")]
     #[inline]
     #[must_use]
     pub fn to_vec2(&self, layout: &HexLayout) -> Vec2 {
         layout.hex_to_world_pos(self.pos)
     }
 
-    #[cfg(feature = "bevy")]
+    #[cfg(feature = "bevy_reflect")]
     #[inline]
     #[must_use]
     pub fn to_vec3(&self, layout: &HexLayout) -> Vec3 {
