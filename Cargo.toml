@@ -16,6 +16,7 @@ categories = [
   "data-structures",
 ]
 exclude = ["/.github", "/.gitignore", "/tests", "*.png", "*.md"]
+readme = "README.md"
 
 [dependencies]
 bevy = { version = "0.15", optional = true }

@@ -168,8 +168,8 @@ impl MazeBuilder {
     ///
     /// // Should succeed with radius
     /// let result = MazeBuilder::new()
-    /// .with_radius(3)
-    /// .build();
+    ///     .with_radius(3)
+    ///     .build();
     /// assert!(result.is_ok());
     ///
     /// let maze = result.unwrap();
