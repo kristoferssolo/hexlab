@@ -21,7 +21,7 @@ pub struct HexMaze(HashMap<Hex, HexTile>);
 
 impl HexMaze {
     /// Creates a new empty maze
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub fn new() -> Self {
         Self::default()
@@ -54,7 +54,7 @@ impl HexMaze {
     /// # Arguments
     ///
     /// - `coord` - The hexagonal coordinates of the tile to retrieve.
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub fn get_tile(&self, coord: &Hex) -> Option<&HexTile> {
         self.0.get(coord)
@@ -70,14 +70,14 @@ impl HexMaze {
     }
 
     /// Returns the number of tiles in the maze.
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub fn len(&self) -> usize {
         self.0.len()
     }
 
     /// Returns `true` if the maze contains no tiles.
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()

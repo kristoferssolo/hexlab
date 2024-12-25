@@ -25,8 +25,9 @@ rand = "0.8"
 serde = { version = "1.0", features = ["derive"], optional = true }
 thiserror = "2.0"
 
-
 [dev-dependencies]
+claims = "0.8"
+rstest = "0.23"
 
 [features]
 default = []
@@ -53,3 +54,6 @@ pedantic = "warn"
 nursery = "warn"
 unwrap_used = "warn"
 expect_used = "warn"
+
+[package.metadata.nextest]
+slow-timeout = { period = "120s", terminate-after = 3 }

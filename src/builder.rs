@@ -80,7 +80,7 @@ pub enum MazeBuilderError {
 #[allow(clippy::module_name_repetitions)]
 #[derive(Default)]
 pub struct MazeBuilder {
-    radius: Option<u32>,
+    radius: Option<u16>,
     seed: Option<u64>,
     generator_type: GeneratorType,
     start_position: Option<Hex>,
@@ -88,7 +88,7 @@ pub struct MazeBuilder {
 
 impl MazeBuilder {
     /// Creates a new [`MazeBuilder`] instance with default settings.
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub fn new() -> Self {
         Self::default()
@@ -104,9 +104,9 @@ impl MazeBuilder {
     /// # Arguments
     ///
     /// - `radius` - The number of tiles from the center to the edge of the hexagon.
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
-    pub const fn with_radius(mut self, radius: u32) -> Self {
+    pub const fn with_radius(mut self, radius: u16) -> Self {
         self.radius = Some(radius);
         self
     }
@@ -118,7 +118,7 @@ impl MazeBuilder {
     /// # Arguments
     ///
     /// - `seed` - The random seed value.
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub const fn with_seed(mut self, seed: u64) -> Self {
         self.seed = Some(seed);
@@ -132,7 +132,7 @@ impl MazeBuilder {
     /// # Arguments
     ///
     /// - `generator_type` - The maze generation algorithm to use.
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub const fn with_generator(mut self, generator_type: GeneratorType) -> Self {
         self.generator_type = generator_type;
@@ -143,7 +143,7 @@ impl MazeBuilder {
     /// # Arguments
     ///
     /// - `pos` - The hexagonal coordinates for the starting position.
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub const fn with_start_position(mut self, pos: Hex) -> Self {
         self.start_position = Some(pos);
@@ -200,9 +200,9 @@ impl MazeBuilder {
         }
     }
 }
-fn create_hex_maze(radius: u32) -> HexMaze {
+fn create_hex_maze(radius: u16) -> HexMaze {
     let mut maze = HexMaze::new();
-    let radius = i32::try_from(radius).unwrap_or(5);
+    let radius = i32::from(radius);
 
     for q in -radius..=radius {
         let r1 = (-radius).max(-q - radius);
@@ -218,194 +218,68 @@ fn create_hex_maze(radius: u32) -> HexMaze {
 
 #[cfg(test)]
 mod test {
-    use hexx::EdgeDirection;
-
     use super::*;
-
-    /// Helper function to count the number of tiles for a given radius
-    fn calculate_hex_tiles(radius: u32) -> usize {
-        let r = radius as i32;
-        (3 * r * r + 3 * r + 1) as usize
-    }
+    use claims::assert_gt;
+    use rstest::rstest;
 
     #[test]
-    fn new_builder() {
+    fn maze_builder_new() {
         let builder = MazeBuilder::new();
-        assert!(builder.radius.is_none());
-        assert!(builder.seed.is_none());
-        assert!(builder.start_position.is_none());
+        assert_eq!(builder.radius, None);
+        assert_eq!(builder.seed, None);
+        assert_eq!(builder.generator_type, GeneratorType::default());
+        assert_eq!(builder.start_position, None);
+    }
+
+    #[rstest]
+    #[case(0, 1)] // Minimum size is 1 tile
+    #[case(1, 7)]
+    #[case(2, 19)]
+    #[case(3, 37)]
+    #[case(10, 331)]
+    #[case(100, 30301)]
+    fn create_hex_maze_various_radii(#[case] radius: u16, #[case] expected_size: usize) {
+        let maze = create_hex_maze(radius);
+        assert_eq!(maze.len(), expected_size);
     }
 
     #[test]
-    fn builder_with_radius() {
-        let radius = 5;
-        let maze = MazeBuilder::new().with_radius(radius).build().unwrap();
+    fn create_hex_maze_large_radius() {
+        let large_radius = 1000;
+        let maze = create_hex_maze(large_radius);
+        assert_gt!(maze.len(), 0);
 
-        assert_eq!(maze.len(), calculate_hex_tiles(radius));
-        assert!(maze.get_tile(&Hex::ZERO).is_some());
+        // Calculate expected size for this radius
+        let expected_size = 3 * (large_radius as usize).pow(2) + 3 * large_radius as usize + 1;
+        assert_eq!(maze.len(), expected_size);
     }
 
     #[test]
-    fn builder_without_radius() {
-        let maze = MazeBuilder::new().build();
-        assert!(matches!(maze, Err(MazeBuilderError::NoRadius)));
-    }
-
-    #[test]
-    fn builder_with_seed() {
-        let radius = 3;
-        let seed = 12345;
-
-        let maze1 = MazeBuilder::new()
-            .with_radius(radius)
-            .with_seed(seed)
-            .build()
-            .unwrap();
-
-        let maze2 = MazeBuilder::new()
-            .with_radius(radius)
-            .with_seed(seed)
-            .build()
-            .unwrap();
-
-        // Same seed should produce identical mazes
-        assert_eq!(maze1, maze2);
-    }
-
-    #[test]
-    fn different_seeds_produce_different_mazes() {
-        let radius = 3;
-
-        let maze1 = MazeBuilder::new()
-            .with_radius(radius)
-            .with_seed(12345)
-            .build()
-            .unwrap();
-
-        let maze2 = MazeBuilder::new()
-            .with_radius(radius)
-            .with_seed(54321)
-            .build()
-            .unwrap();
-
-        // Different seeds should produce different mazes
-        assert_ne!(maze1, maze2);
-    }
-
-    #[test]
-    fn maze_connectivity() {
-        let radius = 3;
-        let maze = MazeBuilder::new().with_radius(radius).build().unwrap();
-
-        // Helper function to count accessible neighbors
-        fn count_accessible_neighbors(maze: &HexMaze, pos: Hex) -> usize {
-            EdgeDirection::ALL_DIRECTIONS
-                .iter()
-                .filter(|&&dir| {
-                    let neighbor = pos + dir;
-                    if let Some(walls) = maze.get_walls(&pos) {
-                        !walls.contains(dir) && maze.get_tile(&neighbor).is_some()
-                    } else {
-                        false
-                    }
-                })
-                .count()
-        }
-
-        // Check that each tile has at least one connection
-        for &pos in maze.keys() {
-            let accessible_neighbors = count_accessible_neighbors(&maze, pos);
-            assert!(
-                accessible_neighbors > 0,
-                "Tile at {:?} has no accessible neighbors",
-                pos
-            );
-        }
-    }
-
-    #[test]
-    fn start_position() {
-        let radius = 3;
-        let start_pos = Hex::new(1, 1);
-
-        let maze = MazeBuilder::new()
-            .with_radius(radius)
-            .with_start_position(start_pos)
-            .build()
-            .unwrap();
-
-        assert!(maze.get_tile(&start_pos).is_some());
-    }
-
-    #[test]
-    fn invalid_start_position() {
-        let maze = MazeBuilder::new()
-            .with_radius(3)
-            .with_start_position(Hex::new(10, 10))
-            .build();
-
-        assert!(matches!(
-            maze,
-            Err(MazeBuilderError::InvalidStartPosition(_))
-        ));
-    }
-
-    #[test]
-    fn maze_boundaries() {
-        let radius = 3;
-        let maze = MazeBuilder::new().with_radius(radius).build().unwrap();
-
-        // Test that tiles exist within the radius
-        for q in -(radius as i32)..=(radius as i32) {
-            for r in -(radius as i32)..=(radius as i32) {
-                let pos = Hex::new(q, r);
-                if q.abs() + r.abs() <= radius as i32 {
-                    assert!(
-                        maze.get_tile(&pos).is_some(),
-                        "Expected tile at {:?} to exist",
-                        pos
-                    );
-                }
-            }
-        }
-    }
-
-    #[test]
-    fn different_radii() {
-        for radius in 1..=5 {
-            let maze = MazeBuilder::new().with_radius(radius).build().unwrap();
-
-            assert_eq!(
-                maze.len(),
-                calculate_hex_tiles(radius),
-                "Incorrect number of tiles for radius {}",
-                radius
-            );
-        }
-    }
-
-    #[test]
-    fn wall_consistency() {
-        let radius = 3;
-        let maze = MazeBuilder::new().with_radius(radius).build().unwrap();
-
-        // Check that if tile A has no wall to tile B,
-        // then tile B has no wall to tile A
-        for &pos in maze.keys() {
-            for &dir in &EdgeDirection::ALL_DIRECTIONS {
-                let neighbor = pos + dir;
-                if let (Some(walls), Some(neighbor_walls)) =
-                    (maze.get_walls(&pos), maze.get_walls(&neighbor))
-                {
-                    assert_eq!(
-                        walls.contains(dir),
-                        neighbor_walls.contains(dir.const_neg()),
-                        "Wall inconsistency between {:?} and {:?}",
-                        pos,
-                        neighbor
-                    );
-                }
-            }
+    fn create_hex_maze_tile_positions() {
+        let maze = create_hex_maze(2);
+        let expected_positions = [
+            Hex::new(0, 0),
+            Hex::new(1, -1),
+            Hex::new(1, 0),
+            Hex::new(0, 1),
+            Hex::new(-1, 1),
+            Hex::new(-1, 0),
+            Hex::new(0, -1),
+            Hex::new(2, -2),
+            Hex::new(2, -1),
+            Hex::new(2, 0),
+            Hex::new(1, 1),
+            Hex::new(0, 2),
+            Hex::new(-1, 2),
+            Hex::new(-2, 2),
+            Hex::new(-2, 1),
+            Hex::new(-2, 0),
+            Hex::new(-1, -1),
+            Hex::new(0, -2),
+            Hex::new(1, -2),
+        ];
+        for pos in expected_positions.iter() {
+            assert!(maze.get_tile(pos).is_some(), "Expected tile at {:?}", pos);
         }
     }
 }

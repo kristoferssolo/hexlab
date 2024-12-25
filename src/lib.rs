@@ -16,23 +16,39 @@
 //!```
 //! use hexlab::prelude::*;
 //!
-//! // Create a new maze
 //! let maze = MazeBuilder::new()
-//!     .with_radius(5)
+//!     .with_radius(3)
 //!     .build()
 //!     .expect("Failed to create maze");
 //!
-//! // Get a specific tile
-//! let tile = maze.get_tile(&Hex::new(1, -1)).unwrap();
-//!
-//! // Check if a wall exists
-//! let has_wall = tile.walls().contains(EdgeDirection::FLAT_NORTH);
+//! assert_eq!(maze.len(), 37); // A radius of 3 should create 37 tiles
 //!```
 //!
-//! # Acknowledgements
+//! Customizing maze generation:
 //!
-//! Hexlab relies on the excellent [hexx](https://github.com/ManevilleF/hexx) library for handling
-//! hexagonal grid mathematics, coordinates, and related operations.
+//!```
+//! use hexlab::prelude::*;
+//!
+//! let maze = MazeBuilder::new()
+//!     .with_radius(2)
+//!     .with_seed(12345)
+//!     .with_start_position(Hex::new(1, -1))
+//!     .build()
+//!     .expect("Failed to create maze");
+//!
+//! assert!(maze.get_tile(&Hex::new(1, -1)).is_some());
+//!```
+//!
+//! Manipulating walls:
+//!
+//!```
+//! use hexlab::prelude::*;
+//!
+//! let mut walls = Walls::empty();
+//! walls.add(EdgeDirection::FLAT_NORTH);
+//! assert!(walls.contains(EdgeDirection::FLAT_NORTH));
+//! assert!(!walls.contains(EdgeDirection::FLAT_SOUTH));
+//!```
 mod builder;
 mod generator;
 mod hex_maze;

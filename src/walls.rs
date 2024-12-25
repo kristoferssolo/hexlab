@@ -38,21 +38,21 @@ impl Walls {
     /// Creates a new set of walls with all edges closed.
     ///
     /// This is the default state where all six edges of the hexagon have walls.
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Creates a new set of walls with no edges (completely open).
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub const fn empty() -> Self {
         Self(0)
     }
 
     /// Checks if the walls are currently empty (no walls present).
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub const fn is_empty(&self) -> bool {
         self.0 == 0
@@ -63,7 +63,7 @@ impl Walls {
     /// # Arguments
     ///
     /// 0 `direction` - The direction in which to add the wall.
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     pub fn add<T>(&mut self, direction: T)
     where
         T: Into<Self> + Copy,
@@ -76,7 +76,7 @@ impl Walls {
     /// # Arguments
     ///
     /// - `direction` - The direction from which to remove the wall.
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     pub fn remove<T>(&mut self, direction: T) -> bool
     where
         T: Into<Self> + Copy,
@@ -93,7 +93,7 @@ impl Walls {
     /// # Arguments
     ///
     /// - `other` - The direction to check for a wall.
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     pub fn contains<T>(&self, other: T) -> bool
     where
         T: Into<Self> + Copy,
@@ -102,21 +102,21 @@ impl Walls {
     }
 
     /// Returns the raw bit representation of the walls
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub const fn as_bits(&self) -> u8 {
         self.0
     }
 
     /// Returns the total number of walls present
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub fn count(&self) -> u8 {
         u8::try_from(self.0.count_ones()).unwrap_or_default()
     }
 
     /// Returns a `Walls` value representing all possible directions.
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub const fn all_directions() -> Self {
         Self(0b11_1111)
@@ -156,7 +156,7 @@ impl Walls {
     /// # Deprecated
     ///
     /// This method is deprecated since version 0.3.1. Use `is_enclosed()` instead.
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     #[deprecated(since = "0.3.1", note = "use `walls::Walls::is_enclosed()`")]
     pub fn is_closed(&self) -> bool {
@@ -168,7 +168,7 @@ impl Walls {
     /// # Returns
     ///
     /// `true` if the hexagon has all possible walls, making it completely enclosed.
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub fn is_enclosed(&self) -> bool {
         self.count() == 6
@@ -196,7 +196,7 @@ impl Walls {
     /// assert!(walls.contains(EdgeDirection::FLAT_SOUTH));
     /// assert_eq!(walls.count(), 3);
     /// ```
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     pub fn fill<T>(&mut self, other: T)
     where
         T: Into<Self>,

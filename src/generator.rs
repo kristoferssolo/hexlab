@@ -11,7 +11,7 @@ use crate::HexMaze;
 #[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
 #[cfg_attr(feature = "bevy", derive(Component))]
 #[cfg_attr(feature = "bevy", reflect(Component))]
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum GeneratorType {
     #[default]
     RecursiveBacktracking,

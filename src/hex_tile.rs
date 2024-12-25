@@ -34,14 +34,14 @@ impl HexTile {
     }
 
     /// Returns a reference to the tile's walls
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub const fn walls(&self) -> &Walls {
         &self.walls
     }
 
     /// Returns position of the tile
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub const fn pos(&self) -> Hex {
         self.pos
@@ -52,7 +52,7 @@ impl HexTile {
     ///
     /// - `layout` - The hexagonal layout used for conversion.
     #[cfg(feature = "bevy_reflect")]
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub fn to_vec2(&self, layout: &HexLayout) -> Vec2 {
         layout.hex_to_world_pos(self.pos)
@@ -64,7 +64,7 @@ impl HexTile {
     ///
     /// - `layout` - The hexagonal layout used for conversion.
     #[cfg(feature = "bevy_reflect")]
-    #[inline]
+    #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub fn to_vec3(&self, layout: &HexLayout) -> Vec3 {
         let pos = self.to_vec2(layout);
