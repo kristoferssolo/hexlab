@@ -9,6 +9,7 @@ use std::fmt::Display;
 /// Represents a single hexagonal tile in the maze
 ///
 /// Each tile has a position and a set of walls defining its boundaries.
+#[allow(clippy::module_name_repetitions)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
 #[cfg_attr(feature = "bevy", derive(Component))]

@@ -51,14 +51,14 @@
 //!```
 mod builder;
 mod generator;
-mod hex_maze;
-mod hex_tile;
+mod maze;
+mod tile;
 mod walls;
 
 pub use builder::{MazeBuilder, MazeBuilderError};
 pub use generator::GeneratorType;
-pub use hex_maze::HexMaze;
-pub use hex_tile::HexTile;
+pub use maze::HexMaze;
+pub use tile::HexTile;
 pub use walls::Walls;
 
 /// Prelude module containing commonly used types

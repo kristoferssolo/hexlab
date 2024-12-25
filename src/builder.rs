@@ -190,7 +190,7 @@ impl MazeBuilder {
         Ok(maze)
     }
 }
-pub(crate) fn create_hex_maze(radius: u16) -> HexMaze {
+pub fn create_hex_maze(radius: u16) -> HexMaze {
     let mut maze = HexMaze::new();
     let radius = i32::from(radius);
 

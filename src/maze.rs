@@ -12,6 +12,7 @@ use std::ops::{Deref, DerefMut};
 ///
 /// This struct stores the layout of a hexagonal maze, including the positions
 /// of tiles and their associated walls.
+#[allow(clippy::module_name_repetitions)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
 #[cfg_attr(feature = "bevy", derive(Component))]
