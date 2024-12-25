@@ -1,8 +1,6 @@
 use super::{HexTile, Walls};
 #[cfg(feature = "bevy_reflect")]
-use bevy::prelude::*;
-#[cfg(feature = "bevy_reflect")]
-use bevy::utils::HashMap;
+use bevy_utils::HashMap;
 use hexx::{EdgeDirection, Hex};
 #[cfg(not(feature = "bevy_reflect"))]
 use std::collections::HashMap;
@@ -14,9 +12,9 @@ use std::ops::{Deref, DerefMut};
 /// of tiles and their associated walls.
 #[allow(clippy::module_name_repetitions)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
-#[cfg_attr(feature = "bevy", derive(Component))]
-#[cfg_attr(feature = "bevy", reflect(Component))]
+#[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
+#[cfg_attr(feature = "bevy", derive(bevy::Component))]
+#[cfg_attr(feature = "bevy", reflect(bevy::Component))]
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct HexMaze(HashMap<Hex, HexTile>);
 
@@ -56,7 +54,6 @@ impl HexMaze {
     ///
     /// assert_eq!(maze.len(), 1);
     /// assert!(!maze.is_empty());
-    /// assert!(!maze.get_tile(&coord).is_some());
     /// ```
     pub fn add_tile(&mut self, coords: Hex) {
         let tile = HexTile::new(coords);
@@ -80,8 +77,9 @@ impl HexMaze {
     /// maze.add_tile(coord);
     ///
     /// maze.add_wall(coord, EdgeDirection::FLAT_NORTH);
-    /// let walls = maze.get_walls(&coord).unwrap();
-    /// assert!(walls.contains(EdgeDirection::FLAT_NORTH));
+    /// let walls = maze.get_walls(&coord);
+    /// assert!(walls.is_some());
+    /// assert!(walls.unwrap().contains(EdgeDirection::FLAT_NORTH));
     /// ```
     pub fn add_wall(&mut self, coord: Hex, direction: EdgeDirection) {
         if let Some(tile) = self.0.get_mut(&coord) {
@@ -104,7 +102,8 @@ impl HexMaze {
     /// let coord = Hex::ZERO;
     /// maze.add_tile(coord);
     ///
-    /// assert!(!maze.get_tile(&coord).is_some());
+    /// assert!(maze.get_tile(&coord).is_some());
+    /// assert!(maze.get_tile(&Hex::new(1, 1)).is_none());
     /// ```
     #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]

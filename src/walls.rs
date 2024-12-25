@@ -1,5 +1,3 @@
-#[cfg(feature = "bevy_reflect")]
-use bevy::prelude::*;
 use hexx::EdgeDirection;
 
 /// A bit-flag representation of walls in a hexagonal tile.
@@ -28,7 +26,7 @@ use hexx::EdgeDirection;
 /// assert_eq!(walls.count(), 2);
 /// ```
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
+#[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
 #[cfg_attr(feature = "bevy", derive(Component))]
 #[cfg_attr(feature = "bevy", reflect(Component))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -38,6 +36,15 @@ impl Walls {
     /// Creates a new set of walls with all edges closed.
     ///
     /// This is the default state where all six edges of the hexagon have walls.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hexlab::prelude::*;
+    ///
+    /// let walls = Walls::new();
+    /// assert!(walls.is_enclosed());
+    /// ```
     #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub fn new() -> Self {
@@ -45,6 +52,15 @@ impl Walls {
     }
 
     /// Creates a new set of walls with no edges (completely open).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hexlab::prelude::*;
+    ///
+    /// let walls = Walls::empty();
+    /// assert!(walls.is_empty());
+    /// ```
     #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub const fn empty() -> Self {
@@ -52,6 +68,15 @@ impl Walls {
     }
 
     /// Checks if the walls are currently empty (no walls present).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hexlab::prelude::*;
+    ///
+    /// let walls = Walls::empty();
+    /// assert!(walls.is_empty());
+    /// ```
     #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub const fn is_empty(&self) -> bool {
@@ -62,7 +87,26 @@ impl Walls {
     ///
     /// # Arguments
     ///
-    /// 0 `direction` - The direction in which to add the wall.
+    /// - `direction` - The direction in which to add the wall.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hexlab::prelude::*;
+    ///
+    /// let mut walls = Walls::empty();
+    /// assert_eq!(walls.count(), 0);
+    ///
+    /// walls.add(1);
+    /// assert_eq!(walls.count(), 1);
+    ///
+    /// walls.add(1);
+    /// assert_eq!(walls.count(), 1);
+    ///
+    /// walls.add(EdgeDirection::FLAT_NORTH);
+    /// assert_eq!(walls.count(), 2);
+    ///
+    /// ```
     #[cfg_attr(not(debug_assertions), inline)]
     pub fn add<T>(&mut self, direction: T)
     where
@@ -76,6 +120,23 @@ impl Walls {
     /// # Arguments
     ///
     /// - `direction` - The direction from which to remove the wall.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hexlab::prelude::*;
+    ///
+    /// let mut walls = Walls::new();
+    ///
+    /// assert!(walls.remove(1));
+    /// assert_eq!(walls.count(), 5);
+    ///
+    /// assert!(!walls.remove(1));
+    /// assert_eq!(walls.count(), 5);
+    ///
+    /// assert!(walls.remove(EdgeDirection::FLAT_NORTH));
+    /// assert_eq!(walls.count(), 4);
+    /// ```
     #[cfg_attr(not(debug_assertions), inline)]
     pub fn remove<T>(&mut self, direction: T) -> bool
     where
@@ -93,6 +154,18 @@ impl Walls {
     /// # Arguments
     ///
     /// - `other` - The direction to check for a wall.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hexlab::prelude::*;
+    ///
+    /// let mut walls = Walls::empty();
+    /// walls.add(EdgeDirection::FLAT_NORTH);
+    ///
+    /// assert!(walls.contains(EdgeDirection::FLAT_NORTH));
+    /// assert!(!walls.contains(EdgeDirection::FLAT_SOUTH));
+    /// ```
     #[cfg_attr(not(debug_assertions), inline)]
     pub fn contains<T>(&self, other: T) -> bool
     where
@@ -102,6 +175,18 @@ impl Walls {
     }
 
     /// Returns the raw bit representation of the walls
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hexlab::prelude::*;
+    ///
+    /// let walls = Walls::new();
+    /// assert_eq!(walls.as_bits(), 0b11_1111);
+    ///
+    /// let walls = Walls::empty();
+    /// assert_eq!(walls.as_bits(), 0);
+    /// ```
     #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub const fn as_bits(&self) -> u8 {
@@ -109,6 +194,21 @@ impl Walls {
     }
 
     /// Returns the total number of walls present
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hexlab::prelude::*;
+    ///
+    /// let mut walls = Walls::empty();
+    /// assert!(walls.is_empty());
+    ///
+    /// walls.add(0);
+    /// assert_eq!(walls.count(), 1);
+    ///
+    /// walls.add(1);
+    /// assert_eq!(walls.count(), 2);
+    /// ```
     #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub fn count(&self) -> u8 {
@@ -116,6 +216,14 @@ impl Walls {
     }
 
     /// Returns a `Walls` value representing all possible directions.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hexlab::prelude::*;
+    ///
+    /// assert_eq!(Walls::all_directions().as_bits(), 0b11_1111);
+    /// ```
     #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub const fn all_directions() -> Self {
@@ -134,6 +242,20 @@ impl Walls {
     /// # Returns
     ///
     /// The previous state (`true` if a wall was present before toggling, `false` otherwise).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hexlab::prelude::*;
+    ///
+    /// let mut walls = Walls::empty();
+    ///
+    /// assert!(!walls.toggle(0));
+    /// assert_eq!(walls.count(), 1);
+    ///
+    /// assert!(walls.toggle(0));
+    /// assert_eq!(walls.count(), 0);
+    /// ```
     pub fn toggle<T>(&mut self, direction: T) -> bool
     where
         T: Into<Self> + Copy,
@@ -155,10 +277,10 @@ impl Walls {
     ///
     /// # Deprecated
     ///
-    /// This method is deprecated since version 0.3.1. Use `is_enclosed()` instead.
+    /// This method is deprecated since version 0.4.0. Use `is_enclosed()` instead.
     #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
-    #[deprecated(since = "0.3.1", note = "use `walls::Walls::is_enclosed()`")]
+    #[deprecated(since = "0.4.0", note = "use `walls::Walls::is_enclosed()`")]
     pub fn is_closed(&self) -> bool {
         self.is_enclosed()
     }
@@ -168,6 +290,18 @@ impl Walls {
     /// # Returns
     ///
     /// `true` if the hexagon has all possible walls, making it completely enclosed.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hexlab::prelude::*;
+    ///
+    /// let mut walls = Walls::new();
+    /// assert!(walls.is_enclosed());
+    ///
+    /// walls.remove(0);
+    /// assert!(!walls.is_enclosed());
+    /// ```
     #[cfg_attr(not(debug_assertions), inline)]
     #[must_use]
     pub fn is_enclosed(&self) -> bool {
@@ -247,7 +381,7 @@ mod test {
     #[test]
     fn all_directions_creates_closed_walls() {
         let walls = Walls::all_directions();
-        assert!(walls.is_closed());
+        assert!(walls.is_enclosed());
         assert!(!walls.is_empty());
         assert_eq!(walls.as_bits(), 0b111111);
     }
@@ -284,7 +418,7 @@ mod test {
     #[test]
     fn new_created_closed_walls() {
         let walls = Walls::new();
-        assert!(walls.is_closed());
+        assert!(walls.is_enclosed());
         assert_eq!(walls.as_bits(), 0b111111);
     }
 
@@ -393,7 +527,7 @@ mod test {
     #[test]
     fn default_creates_closed_walls() {
         let walls = Walls::default();
-        assert!(walls.is_closed());
+        assert!(walls.is_enclosed());
         assert_eq!(walls.as_bits(), 0b111111);
     }
 
