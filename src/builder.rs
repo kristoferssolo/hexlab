@@ -1,7 +1,4 @@
-use crate::{
-    generator::{generate_backtracking, GeneratorType},
-    HexMaze,
-};
+use crate::{GeneratorType, HexMaze};
 use hexx::Hex;
 use thiserror::Error;
 
@@ -186,21 +183,14 @@ impl MazeBuilder {
         }
 
         if !maze.is_empty() {
-            self.generate_maze(&mut maze);
+            self.generator_type
+                .generate(&mut maze, self.start_position, self.seed);
         }
 
         Ok(maze)
     }
-
-    fn generate_maze(&self, maze: &mut HexMaze) {
-        match self.generator_type {
-            GeneratorType::RecursiveBacktracking => {
-                generate_backtracking(maze, self.start_position, self.seed);
-            }
-        }
-    }
 }
-fn create_hex_maze(radius: u16) -> HexMaze {
+pub(crate) fn create_hex_maze(radius: u16) -> HexMaze {
     let mut maze = HexMaze::new();
     let radius = i32::from(radius);
 
