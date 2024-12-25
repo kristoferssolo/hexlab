@@ -396,7 +396,7 @@ impl Default for Walls {
 }
 
 #[cfg(test)]
-mod tests {
+mod test {
     use super::*;
 
     // all_directions

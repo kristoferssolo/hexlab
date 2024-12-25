@@ -73,7 +73,7 @@ impl Display for HexTile {
 }
 
 #[cfg(test)]
-mod tests {
+mod test {
     use hexx::EdgeDirection;
 
     use super::*;

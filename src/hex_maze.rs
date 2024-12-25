@@ -84,7 +84,7 @@ impl DerefMut for HexMaze {
 }
 
 #[cfg(test)]
-mod tests {
+mod test {
     use super::*;
 
     #[test]
