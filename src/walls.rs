@@ -1,3 +1,5 @@
+#[cfg(feature = "bevy")]
+use bevy::prelude::*;
 use hexx::EdgeDirection;
 
 /// A bit-flag representation of walls in a hexagonal tile.

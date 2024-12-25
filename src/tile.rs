@@ -1,4 +1,6 @@
 use super::Walls;
+#[cfg(feature = "bevy")]
+use bevy::prelude::*;
 use hexx::Hex;
 #[cfg(feature = "bevy_reflect")]
 use hexx::HexLayout;

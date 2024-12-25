@@ -1,4 +1,6 @@
 use super::{HexTile, Walls};
+#[cfg(feature = "bevy")]
+use bevy::prelude::*;
 #[cfg(feature = "bevy_reflect")]
 use bevy_utils::HashMap;
 use hexx::{EdgeDirection, Hex};
@@ -13,8 +15,8 @@ use std::ops::{Deref, DerefMut};
 #[allow(clippy::module_name_repetitions)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
-#[cfg_attr(feature = "bevy", derive(bevy::Component))]
-#[cfg_attr(feature = "bevy", reflect(bevy::Component))]
+#[cfg_attr(feature = "bevy", derive(Component))]
+#[cfg_attr(feature = "bevy", reflect(Component))]
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct HexMaze(HashMap<Hex, HexTile>);
 

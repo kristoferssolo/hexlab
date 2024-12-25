@@ -63,6 +63,18 @@ panic = "abort" # Smaller binary size
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[profile.dev.package."*"]
+opt-level = 3
+
+# Override some settings for native builds.
+[profile.release-native]
+# Default to release profile values.
+inherits = "release"
+# Optimize with performance in mind.
+opt-level = 3
+# Keep debug information in the binary.
+strip = "none"
+
 [lints.clippy]
 pedantic = "warn"
 nursery = "warn"
