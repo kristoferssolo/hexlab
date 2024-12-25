@@ -8,7 +8,10 @@ use hexx::{EdgeDirection, Hex};
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 
-/// Represents a hexagonal maze with tiles and walls
+/// Represents a hexagonal maze with tiles and walls.
+///
+/// This struct stores the layout of a hexagonal maze, including the positions
+/// of tiles and their associated walls.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
 #[cfg_attr(feature = "bevy", derive(Component))]
@@ -25,44 +28,67 @@ impl HexMaze {
     }
 
     /// Adds a new tile at the specified coordinates
+    ///
+    /// # Arguments
+    ///
+    /// - `coords` - The hexagonal coordinates where the tile should be added.
     pub fn add_tile(&mut self, coords: Hex) {
         let tile = HexTile::new(coords);
         self.0.insert(coords, tile);
     }
 
-    /// Adds a wall in the specified direction at the given coordinates
+    /// Adds a wall in the specified direction at the given coordinates.
+    ///
+    /// # Arguments
+    ///
+    /// - `coord` - The hexagonal coordinates of the tile.
+    /// - `direction` - The direction in which to add the wall.
     pub fn add_wall(&mut self, coord: Hex, direction: EdgeDirection) {
         if let Some(tile) = self.0.get_mut(&coord) {
             tile.walls.add(direction);
         }
     }
 
-    /// Returns a reference to the tile at the specified coordinates
+    /// Returns a reference to the tile at the specified coordinates.
+    ///
+    /// # Arguments
+    ///
+    /// - `coord` - The hexagonal coordinates of the tile to retrieve.
     #[inline]
     #[must_use]
     pub fn get_tile(&self, coord: &Hex) -> Option<&HexTile> {
         self.0.get(coord)
     }
 
-    /// Returns a reference to the walls at the specified coordinates
+    /// Returns an optional reference to the walls at the specified coordinates.
+    ///
+    /// # Arguments
+    ///
+    /// - `coord` - The hexagonal coordinates of the tile whose walls to retrieve.
     pub fn get_walls(&self, coord: &Hex) -> Option<&Walls> {
         self.0.get(coord).map(HexTile::walls)
     }
 
-    /// Returns the number of tiles in the maze
+    /// Returns the number of tiles in the maze.
     #[inline]
     #[must_use]
     pub fn len(&self) -> usize {
         self.0.len()
     }
 
-    /// Returns true if the maze is empty
+    /// Returns `true` if the maze contains no tiles.
     #[inline]
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
 
+    /// Removes a wall from a tile in the specified direction.
+    ///
+    /// # Arguments
+    ///
+    /// - `coord` - The hexagonal coordinates of the tile.
+    /// - `direction` - The direction of the wall to remove.
     pub fn remove_tile_wall(&mut self, coord: &Hex, direction: EdgeDirection) {
         if let Some(tile) = self.0.get_mut(coord) {
             tile.walls.remove(direction);

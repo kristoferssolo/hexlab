@@ -7,6 +7,8 @@ use hexx::HexLayout;
 use std::fmt::Display;
 
 /// Represents a single hexagonal tile in the maze
+///
+/// Each tile has a position and a set of walls defining its boundaries.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
 #[cfg_attr(feature = "bevy", derive(Component))]
@@ -18,7 +20,11 @@ pub struct HexTile {
 }
 
 impl HexTile {
-    /// Creates a new tile with pos and default walls
+    /// Creates a new tile with the given position and default walls.
+    ///
+    /// # Arguments
+    ///
+    /// - `pos` - The hexagonal coordinates of the tile.
     #[must_use]
     pub fn new(pos: Hex) -> Self {
         Self {
@@ -40,7 +46,11 @@ impl HexTile {
     pub const fn pos(&self) -> Hex {
         self.pos
     }
-
+    /// Converts the tile's position to a 2D vector based on the given layout.
+    ///
+    /// # Arguments
+    ///
+    /// - `layout` - The hexagonal layout used for conversion.
     #[cfg(feature = "bevy_reflect")]
     #[inline]
     #[must_use]
@@ -48,6 +58,11 @@ impl HexTile {
         layout.hex_to_world_pos(self.pos)
     }
 
+    /// Converts the tile's position to a 3D vector based on the given layout.
+    ///
+    /// # Arguments
+    ///
+    /// - `layout` - The hexagonal layout used for conversion.
     #[cfg(feature = "bevy_reflect")]
     #[inline]
     #[must_use]
