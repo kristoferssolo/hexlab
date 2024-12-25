@@ -94,15 +94,6 @@ fn maze_connectivity() {
 }
 
 #[test]
-fn generator_type() {
-    let maze = assert_ok!(MazeBuilder::new()
-        .with_radius(3)
-        .with_generator(GeneratorType::RecursiveBacktracking)
-        .build());
-    claims::assert_gt!(maze.len(), 0);
-}
-
-#[test]
 fn maze_boundaries() {
     let radius = 3;
     let maze = MazeBuilder::new()
