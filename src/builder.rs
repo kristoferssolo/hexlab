@@ -24,58 +24,60 @@ pub enum MazeBuilderError {
     GenerationError(String),
 }
 
-/// A builder pattern for creating hexagonal mazes.
-///
-/// This struct provides a fluent interface for configuring and building hexagonal mazes.
-/// It offers flexibility in specifying the maze size, random seed, and generation algorithm.
-///
-/// # Examples
-///
-/// Basic usage:
-/// ```rust
-/// use hexlab::prelude::*;
-///
-/// let maze = MazeBuilder::new()
-///     .with_radius(5)
-///     .build()
-///     .expect("Failed to create maze");
-///
-/// // A radius of 5 creates 61 hexagonal tiles
-/// assert!(!maze.is_empty());
-/// assert_eq!(maze.len(), 91);
-/// ```
-///
-/// Using a seed for reproducible results:
-/// ```rust
-/// use hexlab::prelude::*;
-///
-/// let maze1 = MazeBuilder::new()
-///     .with_radius(3)
-///     .with_seed(12345)
-///     .build()
-///     .expect("Failed to create maze");
-///
-/// let maze2 = MazeBuilder::new()
-///     .with_radius(3)
-///     .with_seed(12345)
-///     .build()
-///     .expect("Failed to create maze");
-///
-/// // Same seed should produce identical mazes
-/// assert_eq!(maze1.len(), maze2.len());
-/// assert_eq!(maze1, maze2);
-/// ```
-///
-/// Specifying a custom generator:
-/// ```rust
-/// use hexlab::prelude::*;
-///
-/// let maze = MazeBuilder::new()
-///     .with_radius(7)
-///     .with_generator(GeneratorType::RecursiveBacktracking)
-///     .build()
-///     .expect("Failed to create maze");
-/// ```
+/**
+A builder pattern for creating hexagonal mazes.
+
+This struct provides a fluent interface for configuring and building hexagonal mazes.
+It offers flexibility in specifying the maze size, random seed, and generation algorithm.
+
+# Examples
+
+Basic usage:
+```
+use hexlab::prelude::*;
+
+let maze = MazeBuilder::new()
+    .with_radius(5)
+    .build()
+    .expect("Failed to create maze");
+
+// A radius of 5 creates 61 hexagonal tiles
+assert!(!maze.is_empty());
+assert_eq!(maze.len(), 91);
+```
+
+Using a seed for reproducible results:
+```
+use hexlab::prelude::*;
+
+let maze1 = MazeBuilder::new()
+    .with_radius(3)
+    .with_seed(12345)
+    .build()
+    .expect("Failed to create maze");
+
+let maze2 = MazeBuilder::new()
+    .with_radius(3)
+    .with_seed(12345)
+    .build()
+    .expect("Failed to create maze");
+
+// Same seed should produce identical mazes
+assert_eq!(maze1.len(), maze2.len());
+assert_eq!(maze1, maze2);
+```
+
+Specifying a custom generator:
+```
+use hexlab::prelude::*;
+
+let maze = MazeBuilder::new()
+    .with_radius(7)
+    .with_generator(GeneratorType::RecursiveBacktracking)
+    .build()
+    .expect("Failed to create maze");
+```
+*/
 #[allow(clippy::module_name_repetitions)]
 #[derive(Default)]
 pub struct MazeBuilder {
@@ -138,31 +140,33 @@ impl MazeBuilder {
         self
     }
 
-    /// Builds the hexagonal maze based on the configured parameters.
-    ///
-    /// # Errors
-    ///
-    /// Returns [`MazeBuilderError::NoRadius`] if no radius is specified.
-    /// Returns [`MazeBuilderError::InvalidStartPosition`] if the start position is outside maze bounds.
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use hexlab::prelude::*;
-    ///
-    /// // Should fail without radius
-    /// let result = MazeBuilder::new().build();
-    /// assert!(result.is_err());
-    ///
-    /// // Should succeed with radius
-    /// let result = MazeBuilder::new()
-    ///     .with_radius(3)
-    ///     .build();
-    /// assert!(result.is_ok());
-    ///
-    /// let maze = result.unwrap();
-    /// assert!(!maze.is_empty());
-    /// ```
+    /**
+    Builds the hexagonal maze based on the configured parameters.
+
+    # Errors
+
+    Returns [`MazeBuilderError::NoRadius`] if no radius is specified.
+    Returns [`MazeBuilderError::InvalidStartPosition`] if the start position is outside maze bounds.
+
+    # Examples
+
+    ```
+    use hexlab::prelude::*;
+
+    // Should fail without radius
+    let result = MazeBuilder::new().build();
+    assert!(result.is_err());
+
+    // Should succeed with radius
+    let result = MazeBuilder::new()
+        .with_radius(3)
+        .build();
+    assert!(result.is_ok());
+
+    let maze = result.unwrap();
+    assert!(!maze.is_empty());
+    ```
+    */
     pub fn build(self) -> Result<HexMaze, MazeBuilderError> {
         let radius = self.radius.ok_or(MazeBuilderError::NoRadius)?;
         let mut maze = create_hex_maze(radius);
