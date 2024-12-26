@@ -16,15 +16,15 @@ use hexx::EdgeDirection;
 ///
 /// // Create a hexagon with all walls
 /// let walls = Walls::new();
-/// assert!(walls.is_closed());
+/// assert!(walls.is_enclosed());
 ///
 /// // Create a hexagon with no walls
 /// let mut walls = Walls::empty();
 /// assert!(walls.is_empty());
 ///
 /// // Add specific walls
-/// walls.add(EdgeDirection::FLAT_NORTH);
-/// walls.add(EdgeDirection::FLAT_SOUTH);
+/// walls.insert(EdgeDirection::FLAT_NORTH);
+/// walls.insert(EdgeDirection::FLAT_SOUTH);
 /// assert_eq!(walls.count(), 2);
 /// ```
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -47,7 +47,7 @@ impl Walls {
     /// let walls = Walls::new();
     /// assert!(walls.is_enclosed());
     /// ```
-    #[cfg_attr(not(debug_assertions), inline)]
+    #[inline]
     #[must_use]
     pub fn new() -> Self {
         Self::default()
@@ -63,7 +63,7 @@ impl Walls {
     /// let walls = Walls::empty();
     /// assert!(walls.is_empty());
     /// ```
-    #[cfg_attr(not(debug_assertions), inline)]
+    #[inline]
     #[must_use]
     pub const fn empty() -> Self {
         Self(0)
@@ -79,17 +79,21 @@ impl Walls {
     /// let walls = Walls::empty();
     /// assert!(walls.is_empty());
     /// ```
-    #[cfg_attr(not(debug_assertions), inline)]
+    #[inline]
     #[must_use]
     pub const fn is_empty(&self) -> bool {
         self.0 == 0
     }
 
-    /// Adds a wall in the specified direction.
+    /// Insert a wall in the specified direction.
     ///
     /// # Arguments
     ///
-    /// - `direction` - The direction in which to add the wall.
+    /// - `direction` - The direction in which to insert the wall.
+    ///
+    /// # Returns
+    ///
+    /// Returns `true` if a wall was present, `false` otherwise.
     ///
     /// # Examples
     ///
@@ -99,22 +103,24 @@ impl Walls {
     /// let mut walls = Walls::empty();
     /// assert_eq!(walls.count(), 0);
     ///
-    /// walls.add(1);
+    /// assert!(!walls.insert(1));
     /// assert_eq!(walls.count(), 1);
     ///
-    /// walls.add(1);
+    /// assert!(walls.insert(1));
     /// assert_eq!(walls.count(), 1);
     ///
-    /// walls.add(EdgeDirection::FLAT_NORTH);
+    /// assert!(!walls.insert(EdgeDirection::FLAT_NORTH));
     /// assert_eq!(walls.count(), 2);
-    ///
     /// ```
-    #[cfg_attr(not(debug_assertions), inline)]
-    pub fn add<T>(&mut self, direction: T)
+    #[inline]
+    pub fn insert<T>(&mut self, direction: T) -> bool
     where
         T: Into<Self> + Copy,
     {
-        self.0 |= direction.into().0;
+        let mask = direction.into().0;
+        let was_present = self.0 & mask != 0;
+        self.0 |= mask;
+        was_present
     }
 
     /// Removes a wall in the specified direction.
@@ -122,6 +128,10 @@ impl Walls {
     /// # Arguments
     ///
     /// - `direction` - The direction from which to remove the wall.
+    ///
+    /// # Returns
+    ///
+    /// Returns `true` if a wall was present and removed, `false` otherwise.
     ///
     /// # Examples
     ///
@@ -139,16 +149,15 @@ impl Walls {
     /// assert!(walls.remove(EdgeDirection::FLAT_NORTH));
     /// assert_eq!(walls.count(), 4);
     /// ```
-    #[cfg_attr(not(debug_assertions), inline)]
+    #[inline]
     pub fn remove<T>(&mut self, direction: T) -> bool
     where
         T: Into<Self> + Copy,
     {
-        let was_removed = self.contains(direction);
-        if was_removed {
-            self.0 &= !direction.into().0;
-        }
-        was_removed
+        let mask = direction.into().0;
+        let was_present = self.0 & mask != 0;
+        self.0 &= !mask;
+        was_present
     }
 
     /// Checks if there is a wall in the specified direction.
@@ -163,17 +172,17 @@ impl Walls {
     /// use hexlab::prelude::*;
     ///
     /// let mut walls = Walls::empty();
-    /// walls.add(EdgeDirection::FLAT_NORTH);
+    /// walls.insert(EdgeDirection::FLAT_NORTH);
     ///
-    /// assert!(walls.contains(EdgeDirection::FLAT_NORTH));
-    /// assert!(!walls.contains(EdgeDirection::FLAT_SOUTH));
+    /// assert!(walls.contains(&EdgeDirection::FLAT_NORTH));
+    /// assert!(!walls.contains(&EdgeDirection::FLAT_SOUTH));
     /// ```
-    #[cfg_attr(not(debug_assertions), inline)]
-    pub fn contains<T>(&self, other: T) -> bool
+    #[inline]
+    pub fn contains<T>(&self, direction: &T) -> bool
     where
         T: Into<Self> + Copy,
     {
-        self.0 & other.into().0 != 0
+        self.0 & (*direction).into().0 != 0
     }
 
     /// Returns the raw bit representation of the walls
@@ -189,7 +198,7 @@ impl Walls {
     /// let walls = Walls::empty();
     /// assert_eq!(walls.as_bits(), 0);
     /// ```
-    #[cfg_attr(not(debug_assertions), inline)]
+    #[inline]
     #[must_use]
     pub const fn as_bits(&self) -> u8 {
         self.0
@@ -205,13 +214,13 @@ impl Walls {
     /// let mut walls = Walls::empty();
     /// assert!(walls.is_empty());
     ///
-    /// walls.add(0);
+    /// walls.insert(0);
     /// assert_eq!(walls.count(), 1);
     ///
-    /// walls.add(1);
+    /// walls.insert(1);
     /// assert_eq!(walls.count(), 2);
     /// ```
-    #[cfg_attr(not(debug_assertions), inline)]
+    #[inline]
     #[must_use]
     pub fn count(&self) -> u8 {
         u8::try_from(self.0.count_ones()).unwrap_or_default()
@@ -226,7 +235,7 @@ impl Walls {
     ///
     /// assert_eq!(Walls::all_directions().as_bits(), 0b11_1111);
     /// ```
-    #[cfg_attr(not(debug_assertions), inline)]
+    #[inline]
     #[must_use]
     pub const fn all_directions() -> Self {
         Self(0b11_1111)
@@ -262,29 +271,10 @@ impl Walls {
     where
         T: Into<Self> + Copy,
     {
-        let is_present = self.contains(direction);
-        if is_present {
-            self.remove(direction);
-        } else {
-            self.add(direction);
-        }
-        is_present
-    }
-
-    /// Checks if walls are present in all six directions.
-    ///
-    /// # Returns
-    ///
-    /// `true` if the hexagon has all possible walls, making it completely enclosed.
-    ///
-    /// # Deprecated
-    ///
-    /// This method is deprecated since version 0.4.0. Use `is_enclosed()` instead.
-    #[cfg_attr(not(debug_assertions), inline)]
-    #[must_use]
-    #[deprecated(since = "0.4.0", note = "use `walls::Walls::is_enclosed()`")]
-    pub fn is_closed(&self) -> bool {
-        self.is_enclosed()
+        let mask = direction.into().0;
+        let was_present = self.0 & mask != 0;
+        self.0 ^= mask;
+        was_present
     }
 
     /// Checks if walls are present in all six directions.
@@ -304,7 +294,7 @@ impl Walls {
     /// walls.remove(0);
     /// assert!(!walls.is_enclosed());
     /// ```
-    #[cfg_attr(not(debug_assertions), inline)]
+    #[inline]
     #[must_use]
     pub fn is_enclosed(&self) -> bool {
         self.count() == 6
@@ -317,7 +307,7 @@ impl Walls {
     ///
     /// # Arguments
     ///
-    /// - `other` - The walls to add, specified as a `Walls` instance or any type
+    /// - `other` - The walls to insert, specified as a `Walls` instance or any type
     ///   that can be converted into `Walls`.
     ///
     ///
@@ -329,10 +319,10 @@ impl Walls {
     /// let mut walls = Walls::empty();
     /// walls.fill([EdgeDirection::FLAT_NORTH ,EdgeDirection::FLAT_SOUTH, EdgeDirection::FLAT_SOUTH_EAST]);
     ///
-    /// assert!(walls.contains(EdgeDirection::FLAT_SOUTH));
+    /// assert!(walls.contains(&EdgeDirection::FLAT_SOUTH));
     /// assert_eq!(walls.count(), 3);
     /// ```
-    #[cfg_attr(not(debug_assertions), inline)]
+    #[inline]
     pub fn fill<T>(&mut self, other: T)
     where
         T: Into<Self>,
@@ -398,15 +388,15 @@ mod test {
     #[test]
     fn as_bits_single_wall() {
         let mut walls = Walls::empty();
-        walls.add(EdgeDirection::FLAT_NORTH);
+        walls.insert(EdgeDirection::FLAT_NORTH);
         assert_eq!(walls.as_bits(), 0b010000);
     }
 
     #[test]
     fn as_bits_multiple_walls() {
         let mut walls = Walls::empty();
-        walls.add(EdgeDirection::FLAT_NORTH);
-        walls.add(EdgeDirection::FLAT_SOUTH);
+        walls.insert(EdgeDirection::FLAT_NORTH);
+        walls.insert(EdgeDirection::FLAT_SOUTH);
         assert_eq!(walls.as_bits(), 0b010010);
     }
 
@@ -432,12 +422,12 @@ mod test {
         assert_eq!(walls.as_bits(), 0);
     }
 
-    // add
+    // insert
     #[test]
-    fn add_single_wall() {
+    fn insert_single_wall() {
         let mut walls = Walls::empty();
-        walls.add(EdgeDirection::FLAT_NORTH);
-        assert!(walls.contains(EdgeDirection::FLAT_NORTH));
+        walls.insert(EdgeDirection::FLAT_NORTH);
+        assert!(walls.contains(&EdgeDirection::FLAT_NORTH));
         assert_eq!(walls.count(), 1);
     }
 
@@ -446,30 +436,30 @@ mod test {
     fn remove_existing_wall() {
         let mut walls = Walls::new();
         assert!(walls.remove(EdgeDirection::FLAT_NORTH));
-        assert!(!walls.contains(EdgeDirection::FLAT_NORTH));
+        assert!(!walls.contains(&EdgeDirection::FLAT_NORTH));
     }
 
     #[test]
     fn remove_nonexistent_wall() {
         let mut walls = Walls::empty();
         assert!(!walls.remove(EdgeDirection::FLAT_NORTH));
-        walls.add(EdgeDirection::FLAT_NORTH);
+        walls.insert(EdgeDirection::FLAT_NORTH);
         assert!(walls.remove(EdgeDirection::FLAT_NORTH));
     }
 
     // toggle
     #[test]
-    fn toggle_adds_wall() {
+    fn toggle_wall() {
         let mut walls = Walls::empty();
         assert!(!walls.toggle(EdgeDirection::FLAT_NORTH));
-        assert!(walls.contains(EdgeDirection::FLAT_NORTH));
+        assert!(walls.contains(&EdgeDirection::FLAT_NORTH));
     }
 
     #[test]
     fn toggle_removes_wall() {
         let mut walls = Walls::new();
         assert!(walls.toggle(EdgeDirection::FLAT_NORTH));
-        assert!(!walls.contains(EdgeDirection::FLAT_NORTH));
+        assert!(!walls.contains(&EdgeDirection::FLAT_NORTH));
     }
 
     // fill
@@ -477,41 +467,41 @@ mod test {
     fn fill_adds_multiple_walls() {
         let mut walls = Walls::empty();
         walls.fill([EdgeDirection::FLAT_NORTH, EdgeDirection::FLAT_SOUTH]);
-        assert!(walls.contains(EdgeDirection::FLAT_NORTH));
-        assert!(walls.contains(EdgeDirection::FLAT_SOUTH));
+        assert!(walls.contains(&EdgeDirection::FLAT_NORTH));
+        assert!(walls.contains(&EdgeDirection::FLAT_SOUTH));
         assert_eq!(walls.count(), 2);
     }
 
     #[test]
     fn fill_preserves_existing_walls() {
         let mut walls = Walls::empty();
-        walls.add(EdgeDirection::FLAT_NORTH);
+        walls.insert(EdgeDirection::FLAT_NORTH);
         walls.fill([EdgeDirection::FLAT_SOUTH, EdgeDirection::FLAT_SOUTH_EAST]);
-        assert!(walls.contains(EdgeDirection::FLAT_NORTH));
-        assert!(walls.contains(EdgeDirection::FLAT_SOUTH));
-        assert!(walls.contains(EdgeDirection::FLAT_SOUTH_EAST));
+        assert!(walls.contains(&EdgeDirection::FLAT_NORTH));
+        assert!(walls.contains(&EdgeDirection::FLAT_SOUTH));
+        assert!(walls.contains(&EdgeDirection::FLAT_SOUTH_EAST));
         assert_eq!(walls.count(), 3);
     }
 
     #[test]
     fn from_edge_direction_conversion() {
         let walls: Walls = EdgeDirection::FLAT_NORTH.into();
-        assert!(walls.contains(EdgeDirection::FLAT_NORTH));
+        assert!(walls.contains(&EdgeDirection::FLAT_NORTH));
         assert_eq!(walls.count(), 1);
     }
 
     #[test]
     fn from_u8_conversion() {
         let walls: Walls = 0u8.into();
-        assert!(walls.contains(EdgeDirection::FLAT_SOUTH_EAST));
+        assert!(walls.contains(&EdgeDirection::FLAT_SOUTH_EAST));
         assert_eq!(walls.count(), 1);
     }
 
     #[test]
     fn from_array_conversion() {
         let walls: Walls = [EdgeDirection::FLAT_NORTH, EdgeDirection::FLAT_SOUTH].into();
-        assert!(walls.contains(EdgeDirection::FLAT_NORTH));
-        assert!(walls.contains(EdgeDirection::FLAT_SOUTH));
+        assert!(walls.contains(&EdgeDirection::FLAT_NORTH));
+        assert!(walls.contains(&EdgeDirection::FLAT_SOUTH));
         assert_eq!(walls.count(), 2);
     }
 
@@ -542,8 +532,8 @@ mod test {
         ];
         let walls: Walls = directions.into_iter().collect();
         assert_eq!(walls.count(), 2);
-        assert!(walls.contains(EdgeDirection::FLAT_NORTH));
-        assert!(walls.contains(EdgeDirection::FLAT_SOUTH));
+        assert!(walls.contains(&EdgeDirection::FLAT_NORTH));
+        assert!(walls.contains(&EdgeDirection::FLAT_SOUTH));
     }
 
     #[test]
@@ -551,14 +541,14 @@ mod test {
         let mut walls = Walls::empty();
 
         // Test single bit operations
-        walls.add(EdgeDirection::FLAT_NORTH);
+        walls.insert(EdgeDirection::FLAT_NORTH);
         assert_eq!(walls.as_bits(), 0b010000);
 
-        walls.add(EdgeDirection::FLAT_SOUTH);
+        walls.insert(EdgeDirection::FLAT_SOUTH);
         assert_eq!(walls.as_bits(), 0b010010);
 
         // Test removing middle bit
-        walls.add(EdgeDirection::FLAT_SOUTH_EAST);
+        walls.insert(EdgeDirection::FLAT_SOUTH_EAST);
         assert_eq!(walls.as_bits(), 0b010011);
         walls.remove(EdgeDirection::FLAT_SOUTH);
         assert_eq!(walls.as_bits(), 0b010001);

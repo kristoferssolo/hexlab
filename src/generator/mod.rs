@@ -1,5 +1,5 @@
 mod backtrack;
-use crate::HexMaze;
+use crate::Maze;
 use backtrack::generate_backtracking;
 #[cfg(feature = "bevy")]
 use bevy::prelude::*;
@@ -16,7 +16,7 @@ pub enum GeneratorType {
     RecursiveBacktracking,
 }
 impl GeneratorType {
-    pub fn generate(&self, maze: &mut HexMaze, start_pos: Option<Hex>, seed: Option<u64>) {
+    pub fn generate(&self, maze: &mut Maze, start_pos: Option<Hex>, seed: Option<u64>) {
         match self {
             Self::RecursiveBacktracking => generate_backtracking(maze, start_pos, seed),
         }

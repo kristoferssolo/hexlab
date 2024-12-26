@@ -29,7 +29,7 @@ fn valid_start_position(#[case] start_pos: Hex) {
         .with_radius(3)
         .with_start_position(start_pos)
         .build());
-    assert_some!(maze.get_tile(&start_pos));
+    assert_some!(maze.get(&start_pos));
 }
 
 #[test]
@@ -67,13 +67,13 @@ fn maze_connectivity() {
     let maze = assert_ok!(MazeBuilder::new().with_radius(3).build());
 
     // Helper function to count accessible neighbors
-    fn count_accessible_neighbors(maze: &HexMaze, pos: Hex) -> usize {
+    fn count_accessible_neighbors(maze: &Maze, pos: Hex) -> usize {
         hexx::EdgeDirection::ALL_DIRECTIONS
             .iter()
             .filter(|&&dir| {
                 let neighbor = pos + dir;
                 if let Some(walls) = maze.get_walls(&pos) {
-                    !walls.contains(dir) && maze.get_tile(&neighbor).is_some()
+                    !walls.contains(&dir) && maze.get(&neighbor).is_some()
                 } else {
                     false
                 }
@@ -107,7 +107,7 @@ fn maze_boundaries() {
             let pos = Hex::new(q, r);
             if q.abs() + r.abs() <= radius {
                 assert!(
-                    maze.get_tile(&pos).is_some(),
+                    maze.get(&pos).is_some(),
                     "Expected tile at {:?} to exist",
                     pos
                 );

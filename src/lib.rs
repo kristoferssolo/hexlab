@@ -7,7 +7,6 @@
 //! - Efficient bit-flag representation of walls
 //! - Multiple maze generation algorithms
 //! - Maze builder pattern for easy maze creation
-
 //!
 //! # Examples
 //!
@@ -36,7 +35,7 @@
 //!     .build()
 //!     .expect("Failed to create maze");
 //!
-//! assert!(maze.get_tile(&Hex::new(1, -1)).is_some());
+//! assert!(maze.get(&Hex::new(1, -1)).is_some());
 //!```
 //!
 //! Manipulating walls:
@@ -45,24 +44,28 @@
 //! use hexlab::prelude::*;
 //!
 //! let mut walls = Walls::empty();
-//! walls.add(EdgeDirection::FLAT_NORTH);
-//! assert!(walls.contains(EdgeDirection::FLAT_NORTH));
-//! assert!(!walls.contains(EdgeDirection::FLAT_SOUTH));
+//! assert!(!walls.insert(EdgeDirection::FLAT_NORTH));
+//! assert!(walls.contains(&EdgeDirection::FLAT_NORTH));
+//! assert!(!walls.contains(&EdgeDirection::FLAT_SOUTH));
 //!```
 mod builder;
+pub mod errors;
 mod generator;
 mod maze;
 mod tile;
+pub mod traits;
 mod walls;
 
-pub use builder::{MazeBuilder, MazeBuilderError};
+pub use builder::MazeBuilder;
+pub use errors::*;
 pub use generator::GeneratorType;
-pub use maze::HexMaze;
-pub use tile::HexTile;
+pub use maze::Maze;
+pub use tile::Tile;
+pub use traits::*;
 pub use walls::Walls;
 
 /// Prelude module containing commonly used types
 pub mod prelude {
-    pub use super::{GeneratorType, HexMaze, HexTile, MazeBuilder, MazeBuilderError, Walls};
+    pub use super::{errors::*, traits::*, GeneratorType, Maze, MazeBuilder, Tile, Walls};
     pub use hexx::{EdgeDirection, Hex, HexLayout};
 }
