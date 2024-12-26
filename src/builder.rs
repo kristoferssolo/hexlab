@@ -1,25 +1,5 @@
-use crate::{GeneratorType, HexMaze};
+use crate::{errors::MazeBuilderError, GeneratorType, Maze};
 use hexx::Hex;
-use thiserror::Error;
-
-#[derive(Debug, Error)]
-pub enum MazeBuilderError {
-    /// Occurs when attempting to build a maze without specifying a radius.
-    #[error("Radius must be specified to build a maze")]
-    NoRadius,
-
-    /// Occurs when the specified radius is too large.
-    #[error("Radius {0} is too large. Maximum allowed radius is {1}")]
-    RadiusTooLarge(u32, u32),
-
-    /// Occurs when the specified start position is outside the maze bounds.
-    #[error("Start position {0:?} is outside maze bounds")]
-    InvalidStartPosition(Hex),
-
-    /// Occurs when maze generation fails.
-    #[error("Failed to generate maze: {0}")]
-    GenerationError(String),
-}
 
 /// A builder pattern for creating hexagonal mazes.
 ///
@@ -85,7 +65,7 @@ pub struct MazeBuilder {
 
 impl MazeBuilder {
     /// Creates a new [`MazeBuilder`] instance with default settings.
-    #[cfg_attr(not(debug_assertions), inline)]
+    #[inline]
     #[must_use]
     pub fn new() -> Self {
         Self::default()
@@ -101,7 +81,7 @@ impl MazeBuilder {
     /// # Arguments
     ///
     /// - `radius` - The number of tiles from the center to the edge of the hexagon.
-    #[cfg_attr(not(debug_assertions), inline)]
+    #[inline]
     #[must_use]
     pub const fn with_radius(mut self, radius: u16) -> Self {
         self.radius = Some(radius);
@@ -115,7 +95,7 @@ impl MazeBuilder {
     /// # Arguments
     ///
     /// - `seed` - The random seed value.
-    #[cfg_attr(not(debug_assertions), inline)]
+    #[inline]
     #[must_use]
     pub const fn with_seed(mut self, seed: u64) -> Self {
         self.seed = Some(seed);
@@ -129,7 +109,7 @@ impl MazeBuilder {
     /// # Arguments
     ///
     /// - `generator_type` - The maze generation algorithm to use.
-    #[cfg_attr(not(debug_assertions), inline)]
+    #[inline]
     #[must_use]
     pub const fn with_generator(mut self, generator_type: GeneratorType) -> Self {
         self.generator_type = generator_type;
@@ -140,7 +120,7 @@ impl MazeBuilder {
     /// # Arguments
     ///
     /// - `pos` - The hexagonal coordinates for the starting position.
-    #[cfg_attr(not(debug_assertions), inline)]
+    #[inline]
     #[must_use]
     pub const fn with_start_position(mut self, pos: Hex) -> Self {
         self.start_position = Some(pos);
@@ -172,12 +152,12 @@ impl MazeBuilder {
     /// let maze = result.unwrap();
     /// assert!(!maze.is_empty());
     /// ```
-    pub fn build(self) -> Result<HexMaze, MazeBuilderError> {
+    pub fn build(self) -> Result<Maze, MazeBuilderError> {
         let radius = self.radius.ok_or(MazeBuilderError::NoRadius)?;
         let mut maze = create_hex_maze(radius);
 
         if let Some(start_pos) = self.start_position {
-            if maze.get_tile(&start_pos).is_none() {
+            if maze.get(&start_pos).is_none() {
                 return Err(MazeBuilderError::InvalidStartPosition(start_pos));
             }
         }
@@ -190,8 +170,9 @@ impl MazeBuilder {
         Ok(maze)
     }
 }
-pub fn create_hex_maze(radius: u16) -> HexMaze {
-    let mut maze = HexMaze::new();
+
+pub fn create_hex_maze(radius: u16) -> Maze {
+    let mut maze = Maze::new();
     let radius = i32::from(radius);
 
     for q in -radius..=radius {
@@ -199,7 +180,7 @@ pub fn create_hex_maze(radius: u16) -> HexMaze {
         let r2 = radius.min(-q + radius);
         for r in r1..=r2 {
             let pos = Hex::new(q, r);
-            maze.add_tile(pos);
+            maze.insert(pos);
         }
     }
 
@@ -269,7 +250,7 @@ mod test {
             Hex::new(1, -2),
         ];
         for pos in expected_positions.iter() {
-            assert!(maze.get_tile(pos).is_some(), "Expected tile at {:?}", pos);
+            assert!(maze.get(pos).is_some(), "Expected tile at {:?}", pos);
         }
     }
 }

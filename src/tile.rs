@@ -1,4 +1,7 @@
 use super::Walls;
+#[cfg(feature = "bevy_reflect")]
+use crate::traits::WorldPositionable;
+use crate::traits::{TilePosition, WallStorage};
 #[cfg(feature = "bevy")]
 use bevy::prelude::*;
 use hexx::Hex;
@@ -9,18 +12,90 @@ use std::fmt::Display;
 /// Represents a single hexagonal tile in the maze
 ///
 /// Each tile has a position and a set of walls defining its boundaries.
-#[allow(clippy::module_name_repetitions)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
 #[cfg_attr(feature = "bevy", derive(Component))]
 #[cfg_attr(feature = "bevy", reflect(Component))]
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct HexTile {
+pub struct Tile {
     pub(crate) pos: Hex,
     pub(crate) walls: Walls,
 }
 
-impl HexTile {
+impl TilePosition for Tile {
+    /// Returns position of the tile
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hexlab::prelude::*;
+    ///
+    /// let tile = Tile::new(Hex::new(2, -2));
+    /// assert_eq!(tile.pos(), Hex::new(2, -2));
+    /// ```
+    #[inline]
+    fn pos(&self) -> Hex {
+        self.pos
+    }
+}
+
+impl WallStorage for Tile {
+    /// Returns an immutable reference to the tile's walls
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hexlab::prelude::*;
+    ///
+    /// let tile = Tile::new(Hex::ZERO);
+    /// assert_eq!(*tile.walls(), Walls::default());
+    /// ```
+    #[inline]
+    fn walls(&self) -> &Walls {
+        &self.walls
+    }
+
+    /// Returns a mutable reference to the tile's walls
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hexlab::prelude::*;
+    ///
+    /// let tile = Tile::new(Hex::ZERO);
+    /// assert_eq!(*tile.walls(), Walls::default());
+    /// ```
+    #[inline]
+    fn walls_mut(&mut self) -> &mut Walls {
+        &mut self.walls
+    }
+}
+
+#[cfg(feature = "bevy_reflect")]
+impl WorldPositionable for Tile {
+    /// Converts the tile's position to a 2D vector based on the given layout.
+    ///
+    /// # Arguments
+    ///
+    /// - `layout` - The hexagonal layout used for conversion.
+    #[inline]
+    fn to_vec2(&self, layout: &HexLayout) -> glam::Vec2 {
+        layout.hex_to_world_pos(self.pos)
+    }
+
+    /// Converts the tile's position to a 3D vector based on the given layout.
+    ///
+    /// # Arguments
+    ///
+    /// - `layout` - The hexagonal layout used for conversion.
+    #[inline]
+    fn to_vec3(&self, layout: &HexLayout) -> glam::Vec3 {
+        let pos = self.to_vec2(layout);
+        glam::Vec3::new(pos.x, 0., pos.y)
+    }
+}
+
+impl Tile {
     /// Creates a new tile with the given position and default walls.
     ///
     /// # Arguments
@@ -32,7 +107,7 @@ impl HexTile {
     /// ```
     /// use hexlab::prelude::*;
     ///
-    /// let tile = HexTile::new(Hex::new(1, -1));
+    /// let tile = Tile::new(Hex::new(1, -1));
     /// assert_eq!(tile.pos(), Hex::new(1, -1));
     /// assert_eq!(*tile.walls(), Walls::default());
     /// ```
@@ -43,68 +118,9 @@ impl HexTile {
             walls: Walls::default(),
         }
     }
-
-    /// Returns a reference to the tile's walls
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use hexlab::prelude::*;
-    ///
-    /// let tile = HexTile::new(Hex::ZERO);
-    /// assert_eq!(*tile.walls(), Walls::default());
-    /// ```
-    #[cfg_attr(not(debug_assertions), inline)]
-    #[must_use]
-    pub const fn walls(&self) -> &Walls {
-        &self.walls
-    }
-
-    /// Returns position of the tile
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use hexlab::prelude::*;
-    ///
-    /// let tile = HexTile::new(Hex::new(2, -2));
-    /// assert_eq!(tile.pos(), Hex::new(2, -2));
-    /// ```
-    #[cfg_attr(not(debug_assertions), inline)]
-    #[must_use]
-    pub const fn pos(&self) -> Hex {
-        self.pos
-    }
-
-    /// Converts the tile's position to a 2D vector based on the given layout.
-    ///
-    /// # Arguments
-    ///
-    /// - `layout` - The hexagonal layout used for conversion.
-    #[cfg(feature = "bevy_reflect")]
-    #[cfg_attr(not(debug_assertions), inline)]
-    #[must_use]
-    pub fn to_vec2(&self, layout: &HexLayout) -> glam::Vec2 {
-        layout.hex_to_world_pos(self.pos)
-    }
-
-    /// Converts the tile's position to a 3D vector based on the given layout.
-    ///
-    /// # Arguments
-    ///
-    /// - `layout` - The hexagonal layout used for conversion.
-    #[cfg(feature = "bevy_reflect")]
-    #[cfg_attr(not(debug_assertions), inline)]
-    #[must_use]
-    pub fn to_vec3(&self, layout: &HexLayout) -> glam::Vec3 {
-        use glam::Vec3;
-
-        let pos = self.to_vec2(layout);
-        Vec3::new(pos.x, 0., pos.y)
-    }
 }
 
-impl From<Hex> for HexTile {
+impl From<Hex> for Tile {
     fn from(value: Hex) -> Self {
         Self {
             pos: value,
@@ -113,7 +129,7 @@ impl From<Hex> for HexTile {
     }
 }
 
-impl Display for HexTile {
+impl Display for Tile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "({},{})", self.pos.x, self.pos.y)
     }
@@ -131,26 +147,13 @@ mod test {
     }
 
     #[test]
-    fn tile_modification() {
-        let hex = random_hex();
-        let mut tile = HexTile::new(hex);
-
-        // Modify walls
-        tile.walls.remove(EdgeDirection::FLAT_TOP);
-        assert!(!tile.walls.contains(EdgeDirection::FLAT_TOP));
-
-        tile.walls.add(EdgeDirection::FLAT_TOP);
-        assert!(tile.walls.contains(EdgeDirection::FLAT_TOP));
-    }
-
-    #[test]
     fn different_positions() {
         let positions = [Hex::ZERO, Hex::new(1, 0), Hex::new(-1, 1), Hex::new(2, -2)];
 
         // Create tiles at different positions
         let tiles = positions
             .iter()
-            .map(|&pos| HexTile::new(pos))
+            .map(|&pos| Tile::new(pos))
             .collect::<Vec<_>>();
 
         // Verify each tile has correct position
@@ -170,7 +173,7 @@ mod test {
         ];
 
         for pos in extreme_positions {
-            let tile = HexTile::new(pos);
+            let tile = Tile::new(pos);
             assert_eq!(tile.pos, pos);
         }
     }
@@ -178,7 +181,7 @@ mod test {
     #[test]
     fn hex_tile_creation_and_properties() {
         let hex = random_hex();
-        let tile = HexTile::new(hex);
+        let tile = Tile::new(hex);
 
         assert_eq!(tile.pos(), hex);
         assert!(tile.walls().is_enclosed());
@@ -187,7 +190,7 @@ mod test {
     #[test]
     fn hex_tile_from_hex() {
         let hex = random_hex();
-        let tile = HexTile::from(hex);
+        let tile = Tile::from(hex);
 
         assert_eq!(tile.pos, hex);
         assert_eq!(tile.walls, Walls::default());
@@ -196,7 +199,7 @@ mod test {
     #[test]
     fn hex_hex_into_tile() {
         let hex = random_hex();
-        let tile: HexTile = hex.into();
+        let tile: Tile = hex.into();
 
         assert_eq!(tile.pos, hex);
         assert_eq!(tile.walls, Walls::default());
@@ -204,16 +207,16 @@ mod test {
 
     #[test]
     fn hex_tile_display() {
-        let tile = HexTile::new(Hex::new(3, -3));
+        let tile = Tile::new(Hex::new(3, -3));
         assert_eq!(format!("{tile}"), "(3,-3)");
     }
 
     #[test]
     fn hex_tile_wall_modifications() {
-        let mut tile = HexTile::new(Hex::ZERO);
+        let mut tile = Tile::new(Hex::ZERO);
 
         for direction in EdgeDirection::ALL_DIRECTIONS {
-            tile.walls.add(direction);
+            tile.walls.insert(direction);
         }
         assert_eq!(tile.walls.count(), 6);
 
@@ -231,7 +234,7 @@ mod test {
         #[test]
         fn hex_tile_to_vec2() {
             let layout = HexLayout::default();
-            let tile = HexTile::new(Hex::new(1, 0));
+            let tile = Tile::new(Hex::new(1, 0));
             let vec2 = tile.to_vec2(&layout);
             assert_eq!(vec2, Vec2::new(1.5, -0.8660254));
         }
@@ -239,7 +242,7 @@ mod test {
         #[test]
         fn hex_tile_to_vec3() {
             let layout = HexLayout::default();
-            let tile = HexTile::new(Hex::new(0, 1));
+            let tile = Tile::new(Hex::new(0, 1));
             let vec3 = tile.to_vec3(&layout);
             assert_eq!(vec3, Vec3::new(0.0, 0.0, -1.7320508));
         }

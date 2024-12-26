@@ -1,7 +1,7 @@
 [package]
 name = "hexlab"
 authors = ["Kristofers Solo <dev@kristofers.xyz>"]
-version = "0.4.0"
+version = "0.5.0"
 edition = "2021"
 description = "A hexagonal maze generation and manipulation library"
 repository = "https://github.com/kristoferssolo/hexlab"

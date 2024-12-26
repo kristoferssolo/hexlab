@@ -10,12 +10,12 @@ fn generator_type(
     #[case] start_pos: Option<Hex>,
     #[case] seed: Option<u64>,
 ) {
-    let mut maze = HexMaze::new();
+    let mut maze = Maze::new();
     for q in -3..=3 {
         for r in -3..=3 {
             let hex = Hex::new(q, r);
             if hex.length() <= 3 {
-                maze.add_tile(hex);
+                maze.insert(hex);
             }
         }
     }
@@ -36,7 +36,7 @@ fn generator_type(
         for dir in EdgeDirection::ALL_DIRECTIONS {
             let neighbor = current + dir;
             if let Some(walls) = maze.get_walls(&current) {
-                if !walls.contains(dir) && maze.get_tile(&neighbor).is_some() {
+                if !walls.contains(&dir) && maze.get(&neighbor).is_some() {
                     to_visit.push(neighbor);
                 }
             }
@@ -57,7 +57,7 @@ fn generator_type(
 
 #[test]
 fn test_empty_maze() {
-    let mut maze = HexMaze::new();
+    let mut maze = Maze::new();
     GeneratorType::RecursiveBacktracking.generate(&mut maze, None, None);
     assert!(
         maze.is_empty(),
