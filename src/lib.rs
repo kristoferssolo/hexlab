@@ -45,8 +45,8 @@
 //!
 //! let mut walls = Walls::empty();
 //! assert!(!walls.insert(EdgeDirection::FLAT_NORTH));
-//! assert!(walls.contains(&EdgeDirection::FLAT_NORTH));
-//! assert!(!walls.contains(&EdgeDirection::FLAT_SOUTH));
+//! assert!(walls.contains(EdgeDirection::FLAT_NORTH));
+//! assert!(!walls.contains(EdgeDirection::FLAT_SOUTH));
 //!```
 mod builder;
 pub mod errors;

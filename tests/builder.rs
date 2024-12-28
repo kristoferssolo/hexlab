@@ -73,7 +73,7 @@ fn maze_connectivity() {
             .filter(|&&dir| {
                 let neighbor = pos + dir;
                 if let Some(walls) = maze.get_walls(&pos) {
-                    !walls.contains(&dir) && maze.get(&neighbor).is_some()
+                    !walls.contains(dir) && maze.get(&neighbor).is_some()
                 } else {
                     false
                 }

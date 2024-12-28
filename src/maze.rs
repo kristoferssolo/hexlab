@@ -149,7 +149,7 @@ impl Maze {
     ///
     /// maze.add_tile_wall(&coord, EdgeDirection::FLAT_NORTH);
     /// let walls = maze.get_walls(&coord).unwrap();
-    /// assert!(walls.contains(&EdgeDirection::FLAT_NORTH));
+    /// assert!(walls.contains(EdgeDirection::FLAT_NORTH));
     /// ```
     #[inline]
     #[must_use]
@@ -252,7 +252,7 @@ impl Maze {
     ///
     /// // Check that the wall was added
     /// let walls = maze.get_walls(&Hex::ZERO).unwrap();
-    /// assert!(walls.contains(&EdgeDirection::FLAT_NORTH));
+    /// assert!(walls.contains(EdgeDirection::FLAT_NORTH));
     /// assert_eq!(walls.count(), 1);
     ///
     /// // Adding the same wall again should return true (no change)
@@ -300,7 +300,7 @@ impl Maze {
     /// maze.remove_tile_wall(&coord, EdgeDirection::FLAT_NORTH);
     ///
     /// let walls = maze.get_walls(&coord).unwrap();
-    /// assert!(!walls.contains(&EdgeDirection::FLAT_NORTH));
+    /// assert!(!walls.contains(EdgeDirection::FLAT_NORTH));
     /// ```
     pub fn remove_tile_wall(
         &mut self,
