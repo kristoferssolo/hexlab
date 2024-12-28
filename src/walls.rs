@@ -178,11 +178,11 @@ impl Walls {
     /// assert!(!walls.contains(&EdgeDirection::FLAT_SOUTH));
     /// ```
     #[inline]
-    pub fn contains<T>(&self, direction: &T) -> bool
+    pub fn contains<T>(&self, direction: T) -> bool
     where
         T: Into<Self> + Copy,
     {
-        self.0 & (*direction).into().0 != 0
+        self.0 & direction.into().0 != 0
     }
 
     /// Returns the raw bit representation of the walls
