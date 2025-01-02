@@ -211,18 +211,18 @@ mod test {
     #[case(100, 30301)]
     fn create_hex_maze_various_radii(#[case] radius: u16, #[case] expected_size: usize) {
         let maze = create_hex_maze(radius);
-        assert_eq!(maze.len(), expected_size);
+        assert_eq!(maze.count(), expected_size);
     }
 
     #[test]
     fn create_hex_maze_large_radius() {
         let large_radius = 1000;
         let maze = create_hex_maze(large_radius);
-        assert_gt!(maze.len(), 0);
+        assert_gt!(maze.count(), 0);
 
         // Calculate expected size for this radius
         let expected_size = 3 * (large_radius as usize).pow(2) + 3 * large_radius as usize + 1;
-        assert_eq!(maze.len(), expected_size);
+        assert_eq!(maze.count(), expected_size);
     }
 
     #[test]

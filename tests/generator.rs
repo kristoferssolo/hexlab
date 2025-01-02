@@ -19,11 +19,11 @@ fn generator_type(
             }
         }
     }
-    let initial_size = maze.len();
+    let initial_size = maze.count();
 
     generator.generate(&mut maze, start_pos, seed);
 
-    assert_eq!(maze.len(), initial_size, "Maze size should not change");
+    assert_eq!(maze.count(), initial_size, "Maze size should not change");
 
     // Check maze connectivity
     let start = start_pos.unwrap_or(Hex::ZERO);
@@ -42,7 +42,7 @@ fn generator_type(
             }
         }
     }
-    assert_eq!(visited.len(), maze.len(), "All tiles should be connected");
+    assert_eq!(visited.len(), maze.count(), "All tiles should be connected");
 
     // Check that each tile has at least one open wall
     for &pos in maze.keys() {

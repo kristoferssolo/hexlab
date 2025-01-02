@@ -10,7 +10,7 @@ use rstest::rstest;
 #[case(5, 91)]
 fn maze_size(#[case] radius: u16, #[case] expected_size: usize) {
     let maze = assert_ok!(MazeBuilder::new().with_radius(radius).build());
-    assert_eq!(maze.len(), expected_size);
+    assert_eq!(maze.count(), expected_size);
 }
 
 #[test]
@@ -126,5 +126,5 @@ fn generate_maze_with_different_types(#[case] generator: GeneratorType) {
         .with_generator(generator)
         .build());
 
-    assert_gt!(maze.len(), 0);
+    assert_gt!(maze.count(), 0);
 }

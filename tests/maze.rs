@@ -7,7 +7,7 @@ fn hex_maze_creation_and_basic_operations() {
 
     let center = Hex::ZERO;
     maze.insert(center);
-    assert_eq!(maze.len(), 1);
+    assert_eq!(maze.count(), 1);
     assert!(!maze.is_empty());
 
     let tile = maze.get(&center);
@@ -47,7 +47,7 @@ fn hex_maze_multiple_tiles() {
         maze.insert(tile);
     }
 
-    assert_eq!(maze.len(), tiles.len());
+    assert_eq!(maze.count(), tiles.len());
 
     for &tile in &tiles {
         assert!(maze.get(&tile).is_some());

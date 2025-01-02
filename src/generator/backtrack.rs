@@ -106,6 +106,10 @@ mod test {
                 }
             }
         }
-        assert_eq!(connected.len(), maze.len(), "All tiles should be connected");
+        assert_eq!(
+            connected.len(),
+            maze.count(),
+            "All tiles should be connected"
+        );
     }
 }

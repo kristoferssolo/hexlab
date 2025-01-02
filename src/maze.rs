@@ -69,14 +69,7 @@ impl Maze {
         self.0.insert(coords, tile)
     }
 
-    /// Adds a new tile at the specified coordinates.
-    ///
-    /// If the map did not have this key present, [`None`] is returned.
-    ///
-    /// If the map did have this key present, the value is updated, and the old
-    /// value is returned.
-    ///
-    /// It is recommended to use [`insert`].
+    /// Adds a new tile at the specified coordinates. It is recommended to use [`insert`].
     ///
     /// [`insert`]: Maze::insert
     ///
@@ -85,21 +78,50 @@ impl Maze {
     /// - `coords` - The hexagonal coordinates where the tile should be added.
     /// - `tile` - The tile to insert to.
     ///
+    /// # Errors
+    ///
+    /// Returns [`MazeError::PositionMismatch`] if the tile's position doesn't match the insertion coordinates.
+    /// Returns [`MazeError::TileAlreadyExists`] if a tile already exists at the specified coordinates.
+    ///
     /// # Examples
     ///
     /// ```
     /// use hexlab::prelude::*;
     ///
     /// let mut maze = Maze::new();
-    /// let coord = Hex::ZERO;
-    /// let tile1 = Tile::new(coord);
-    /// let tile2 = Tile::new(Hex::new(1, 1));
     ///
-    /// assert_eq!(maze.insert_with_tile(coord, tile1.clone()), None);
-    /// assert_eq!(maze.insert_with_tile(coord, tile2), Some(tile1));
+    /// assert_eq!(
+    ///     maze.insert_with_tile(Hex::new(2, 2), Tile::new(Hex::ZERO)),
+    ///     Err(MazeError::PositionMismatch {
+    ///         tile_pos: Hex::ZERO,
+    ///         insert_pos: Hex::new(2, 2)
+    ///     })
+    /// );
+    /// let tile = Tile::new(Hex::ZERO);
+    /// assert_eq!(maze.insert_with_tile(Hex::ZERO, tile.clone()), Ok(tile.clone()));
+    /// assert_eq!(
+    ///     maze.insert_with_tile(Hex::ZERO, tile.clone()),
+    ///     Err(MazeError::TileAlreadyExists {
+    ///         pos: Hex::ZERO,
+    ///         old_tile: tile
+    ///     })
+    /// );
     /// ```
-    pub fn insert_with_tile(&mut self, coords: Hex, tile: Tile) -> Option<Tile> {
-        self.0.insert(coords, tile)
+    pub fn insert_with_tile(&mut self, coords: Hex, tile: Tile) -> Result<Tile, MazeError> {
+        if tile.pos != coords {
+            return Err(MazeError::PositionMismatch {
+                tile_pos: tile.pos,
+                insert_pos: coords,
+            });
+        }
+        self.0
+            .insert(coords, tile.clone())
+            .map_or(Ok(tile), |old_tile| {
+                Err(MazeError::TileAlreadyExists {
+                    pos: coords,
+                    old_tile,
+                })
+            })
     }
 
     /// Returns a reference to the tile at the specified coordinates.
@@ -190,17 +212,17 @@ impl Maze {
     /// use hexlab::prelude::*;
     ///
     /// let mut maze = Maze::new();
-    /// assert_eq!(maze.len(), 0);
+    /// assert_eq!(maze.count(), 0);
     ///
     /// maze.insert(Hex::new(0, 0));
-    /// assert_eq!(maze.len(), 1);
+    /// assert_eq!(maze.count(), 1);
     ///
     /// maze.insert(Hex::new(1, -1));
-    /// assert_eq!(maze.len(), 2);
+    /// assert_eq!(maze.count(), 2);
     /// ```
     #[inline]
     #[must_use]
-    pub fn len(&self) -> usize {
+    pub fn count(&self) -> usize {
         self.0.len()
     }
 
