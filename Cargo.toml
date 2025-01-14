@@ -26,6 +26,7 @@ thiserror = "2.0"
 bevy = { version = "0.15", optional = true }
 bevy_utils = { version = "0.15", optional = true }
 glam = { version = "0.29", optional = true }
+pathfinding = { version = "4.13", optional = true }
 
 
 [dependencies.bevy_reflect]
@@ -48,7 +49,7 @@ bevy_reflect = [
   "hexx/bevy_reflect",
   "dep:glam",
 ]
-pathfinding = []
+pathfinding = ["dep:pathfinding"]
 full = ["serde", "bevy", "pathfinding"]
 
 [profile.dev]
