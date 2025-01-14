@@ -52,6 +52,8 @@ mod builder;
 pub mod errors;
 mod generator;
 mod maze;
+#[cfg(feature = "pathfinding")]
+mod pathfinding;
 mod tile;
 pub mod traits;
 mod walls;
