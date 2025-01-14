@@ -23,8 +23,9 @@ impl Maze {
         };
 
         let heuristic = |pos: &Hex| {
+            // Manhatan distance
             let diff = *pos - to;
-            (diff.x.abs() + diff.y.abs()) as u32
+            (diff.x.abs() + diff.y.abs() + diff.z().abs()) as u32 / 2
         };
 
         astar(&from, successors, heuristic, |pos| *pos == to).map(|(path, _)| path)
