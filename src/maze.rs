@@ -34,7 +34,7 @@ impl Maze {
     /// let maze = Maze::new();
     ///
     /// assert!(maze.is_empty());
-    /// assert_eq!(maze.len(), 0);
+    /// assert_eq!(maze.count(), 0);
     /// ```
     #[inline]
     #[must_use]

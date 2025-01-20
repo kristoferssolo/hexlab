@@ -42,7 +42,7 @@ fn main() {
         .with_radius(5)
         .build()
         .expect("Failed to create maze");
-    println!("Maze size: {}", maze.len());
+    println!("Maze size: {}", maze.count());
 }
 ```
 

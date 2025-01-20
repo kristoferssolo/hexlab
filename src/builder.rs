@@ -20,7 +20,7 @@ use hexx::Hex;
 ///
 /// // A radius of 5 creates 61 hexagonal tiles
 /// assert!(!maze.is_empty());
-/// assert_eq!(maze.len(), 91);
+/// assert_eq!(maze.count(), 91);
 /// ```
 ///
 /// Using a seed for reproducible results:
@@ -40,7 +40,7 @@ use hexx::Hex;
 ///     .expect("Failed to create maze");
 ///
 /// // Same seed should produce identical mazes
-/// assert_eq!(maze1.len(), maze2.len());
+/// assert_eq!(maze1.count(), maze2.count());
 /// assert_eq!(maze1, maze2);
 /// ```
 ///

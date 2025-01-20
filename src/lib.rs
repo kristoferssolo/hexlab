@@ -20,7 +20,7 @@
 //!     .build()
 //!     .expect("Failed to create maze");
 //!
-//! assert_eq!(maze.len(), 37); // A radius of 3 should create 37 tiles
+//! assert_eq!(maze.count(), 37); // A radius of 3 should create 37 tiles
 //!```
 //!
 //! Customizing maze generation:
