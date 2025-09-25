@@ -67,28 +67,24 @@ fn maze_connectivity() {
     let maze = assert_ok!(MazeBuilder::new().with_radius(3).build());
 
     // Helper function to count accessible neighbors
-    fn count_accessible_neighbors(maze: &Maze, pos: Hex) -> usize {
+    let count_accessible_neighbors = |pos: Hex| -> usize {
         hexx::EdgeDirection::ALL_DIRECTIONS
             .iter()
             .filter(|&&dir| {
                 let neighbor = pos + dir;
-                if let Some(walls) = maze.get_walls(&pos) {
-                    !walls.contains(dir) && maze.get(&neighbor).is_some()
-                } else {
-                    false
-                }
+                maze.get_walls(&pos)
+                    .is_some_and(|walls| !walls.contains(dir) && maze.get(&neighbor).is_some())
             })
             .count()
-    }
+    };
 
     // Check that each tile has at least one connection
     for &pos in maze.keys() {
-        let accessible_neighbors = count_accessible_neighbors(&maze, pos);
-        claims::assert_gt!(
+        let accessible_neighbors = count_accessible_neighbors(pos);
+        assert_gt!(
             accessible_neighbors,
             0,
-            "Tile at {:?} has no accessible neighbors",
-            pos
+            "Tile at {pos:?} has no accessible neighbors",
         );
     }
 }
@@ -96,10 +92,9 @@ fn maze_connectivity() {
 #[test]
 fn maze_boundaries() {
     let radius = 3;
-    let maze = MazeBuilder::new()
-        .with_radius(radius as u16)
-        .build()
-        .unwrap();
+    let maze = assert_ok!(MazeBuilder::new().with_radius(radius).build());
+
+    let radius = i32::from(radius);
 
     // Test that tiles exist within the radius
     for q in -radius..=radius {
@@ -108,8 +103,7 @@ fn maze_boundaries() {
             if q.abs() + r.abs() <= radius {
                 assert!(
                     maze.get(&pos).is_some(),
-                    "Expected tile at {:?} to exist",
-                    pos
+                    "Expected tile at {pos:?} to exist",
                 );
             }
         }

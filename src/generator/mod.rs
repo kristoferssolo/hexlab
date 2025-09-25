@@ -15,6 +15,7 @@ pub enum GeneratorType {
     #[default]
     RecursiveBacktracking,
 }
+
 impl GeneratorType {
     pub fn generate(&self, maze: &mut Maze, start_pos: Option<Hex>, seed: Option<u64>) {
         match self {

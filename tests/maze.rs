@@ -1,3 +1,4 @@
+use claims::assert_some;
 use hexlab::prelude::*;
 
 #[test]
@@ -10,9 +11,8 @@ fn hex_maze_creation_and_basic_operations() {
     assert_eq!(maze.count(), 1);
     assert!(!maze.is_empty());
 
-    let tile = maze.get(&center);
-    assert!(tile.is_some());
-    assert_eq!(tile.unwrap().pos(), center);
+    let tile = assert_some!(maze.get(&center));
+    assert_eq!(tile.pos(), center);
 }
 
 #[test]
@@ -26,7 +26,7 @@ fn hex_maze_wall_operations() {
         let _ = maze.add_tile_wall(&center, direction);
     }
 
-    let walls = maze.get_walls(&center).unwrap();
+    let walls = assert_some!(maze.get_walls(&center));
     assert_eq!(walls.count(), 6);
 
     // Remove walls
@@ -34,7 +34,7 @@ fn hex_maze_wall_operations() {
         let _ = maze.remove_tile_wall(&center, direction);
     }
 
-    let walls = maze.get_walls(&center).unwrap();
+    let walls = assert_some!(maze.get_walls(&center));
     assert_eq!(walls.count(), 0);
 }
 

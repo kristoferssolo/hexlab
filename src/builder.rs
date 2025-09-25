@@ -190,7 +190,7 @@ pub fn create_hex_maze(radius: u16) -> Maze {
 #[cfg(test)]
 mod test {
     use super::*;
-    use claims::assert_gt;
+    use claims::{assert_gt, assert_some};
     use rstest::rstest;
 
     #[test]
@@ -249,8 +249,8 @@ mod test {
             Hex::new(0, -2),
             Hex::new(1, -2),
         ];
-        for pos in expected_positions.iter() {
-            assert!(maze.get(pos).is_some(), "Expected tile at {:?}", pos);
+        for pos in &expected_positions {
+            assert_some!(maze.get(pos), "Expected tile at {pos:?}");
         }
     }
 }

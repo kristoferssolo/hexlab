@@ -1,3 +1,4 @@
+use claims::assert_some;
 use hexlab::prelude::*;
 use rstest::rstest;
 
@@ -46,11 +47,10 @@ fn generator_type(
 
     // Check that each tile has at least one open wall
     for &pos in maze.keys() {
-        let walls = maze.get_walls(&pos).unwrap();
+        let walls = assert_some!(maze.get_walls(&pos));
         assert!(
             walls.count() < 6,
-            "Tile at {:?} should have at least one open wall",
-            pos
+            "Tile at {pos:?} should have at least one open wall",
         );
     }
 }

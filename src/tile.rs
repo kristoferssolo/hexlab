@@ -236,7 +236,7 @@ mod test {
             let layout = HexLayout::default();
             let tile = Tile::new(Hex::new(1, 0));
             let vec2 = tile.to_vec2(&layout);
-            assert_eq!(vec2, Vec2::new(1.5, -0.8660254));
+            assert_eq!(vec2, Vec2::new(1.5, -0.866_025_4));
         }
 
         #[test]
@@ -244,7 +244,7 @@ mod test {
             let layout = HexLayout::default();
             let tile = Tile::new(Hex::new(0, 1));
             let vec3 = tile.to_vec3(&layout);
-            assert_eq!(vec3, Vec3::new(0.0, 0.0, -1.7320508));
+            assert_eq!(vec3, Vec3::new(0.0, 0.0, -1.732_050_8));
         }
     }
 }

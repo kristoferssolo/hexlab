@@ -44,6 +44,7 @@ fn recursive_backtrack<R: Rng>(
 mod test {
     use super::*;
     use crate::builder::create_hex_maze;
+    use claims::assert_some;
     use rstest::rstest;
 
     #[rstest]
@@ -72,7 +73,7 @@ mod test {
         recursive_backtrack(&mut maze, start, &mut visited, &mut rng);
 
         for &pos in maze.keys() {
-            let walls = maze.get_walls(&pos).unwrap();
+            let walls = assert_some!(maze.get_walls(&pos));
             assert!(
                 walls.count() < 6,
                 "At least one wall should be removed for each tile"

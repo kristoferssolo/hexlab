@@ -375,7 +375,7 @@ mod test {
         let walls = Walls::all_directions();
         assert!(walls.is_enclosed());
         assert!(!walls.is_empty());
-        assert_eq!(walls.as_bits(), 0b111111);
+        assert_eq!(walls.as_bits(), 0b11_1111);
     }
 
     // as_bits
@@ -389,7 +389,7 @@ mod test {
     fn as_bits_single_wall() {
         let mut walls = Walls::empty();
         walls.insert(EdgeDirection::FLAT_NORTH);
-        assert_eq!(walls.as_bits(), 0b010000);
+        assert_eq!(walls.as_bits(), 0b01_0000);
     }
 
     #[test]
@@ -397,13 +397,13 @@ mod test {
         let mut walls = Walls::empty();
         walls.insert(EdgeDirection::FLAT_NORTH);
         walls.insert(EdgeDirection::FLAT_SOUTH);
-        assert_eq!(walls.as_bits(), 0b010010);
+        assert_eq!(walls.as_bits(), 0b01_0010);
     }
 
     #[test]
     fn as_bits_all_walls() {
         let walls = Walls::new();
-        assert_eq!(walls.as_bits(), 0b111111);
+        assert_eq!(walls.as_bits(), 0b11_1111);
     }
 
     // new
@@ -411,7 +411,7 @@ mod test {
     fn new_created_closed_walls() {
         let walls = Walls::new();
         assert!(walls.is_enclosed());
-        assert_eq!(walls.as_bits(), 0b111111);
+        assert_eq!(walls.as_bits(), 0b11_1111);
     }
 
     // empty
@@ -520,7 +520,7 @@ mod test {
     fn default_creates_closed_walls() {
         let walls = Walls::default();
         assert!(walls.is_enclosed());
-        assert_eq!(walls.as_bits(), 0b111111);
+        assert_eq!(walls.as_bits(), 0b11_1111);
     }
 
     #[test]
@@ -542,53 +542,53 @@ mod test {
 
         // Test single bit operations
         walls.insert(EdgeDirection::FLAT_NORTH);
-        assert_eq!(walls.as_bits(), 0b010000);
+        assert_eq!(walls.as_bits(), 0b01_0000);
 
         walls.insert(EdgeDirection::FLAT_SOUTH);
-        assert_eq!(walls.as_bits(), 0b010010);
+        assert_eq!(walls.as_bits(), 0b01_0010);
 
         // Test removing middle bit
         walls.insert(EdgeDirection::FLAT_SOUTH_EAST);
-        assert_eq!(walls.as_bits(), 0b010011);
+        assert_eq!(walls.as_bits(), 0b01_0011);
         walls.remove(EdgeDirection::FLAT_SOUTH);
-        assert_eq!(walls.as_bits(), 0b010001);
+        assert_eq!(walls.as_bits(), 0b01_0001);
     }
 
     // From<EdgeDirection> tests
     #[test]
     fn from_edge_direction_flat_south_east() {
         let walls = Walls::from(EdgeDirection::FLAT_SOUTH_EAST);
-        assert_eq!(walls.as_bits(), 0b000001);
+        assert_eq!(walls.as_bits(), 0b00_0001);
     }
 
     #[test]
     fn from_edge_direction_flat_south() {
         let walls = Walls::from(EdgeDirection::FLAT_SOUTH);
-        assert_eq!(walls.as_bits(), 0b000010);
+        assert_eq!(walls.as_bits(), 0b00_0010);
     }
 
     #[test]
     fn from_edge_direction_flat_south_west() {
         let walls = Walls::from(EdgeDirection::FLAT_SOUTH_WEST);
-        assert_eq!(walls.as_bits(), 0b000100);
+        assert_eq!(walls.as_bits(), 0b00_0100);
     }
 
     #[test]
     fn from_edge_direction_flat_north_west() {
         let walls = Walls::from(EdgeDirection::FLAT_NORTH_WEST);
-        assert_eq!(walls.as_bits(), 0b001000);
+        assert_eq!(walls.as_bits(), 0b00_1000);
     }
 
     #[test]
     fn from_edge_direction_flat_north() {
         let walls = Walls::from(EdgeDirection::FLAT_NORTH);
-        assert_eq!(walls.as_bits(), 0b010000);
+        assert_eq!(walls.as_bits(), 0b01_0000);
     }
 
     #[test]
     fn from_edge_direction_flat_east() {
         let walls = Walls::from(EdgeDirection::FLAT_NORTH_EAST);
-        assert_eq!(walls.as_bits(), 0b100000);
+        assert_eq!(walls.as_bits(), 0b10_0000);
     }
 
     // FromIterator tests
@@ -603,7 +603,7 @@ mod test {
         let walls = vec![EdgeDirection::FLAT_SOUTH]
             .into_iter()
             .collect::<Walls>();
-        assert_eq!(walls.as_bits(), 0b000010);
+        assert_eq!(walls.as_bits(), 0b00_0010);
     }
 
     #[test]
@@ -611,7 +611,7 @@ mod test {
         let walls = vec![EdgeDirection::FLAT_NORTH, EdgeDirection::FLAT_SOUTH]
             .into_iter()
             .collect::<Walls>();
-        assert_eq!(walls.as_bits(), 0b010010);
+        assert_eq!(walls.as_bits(), 0b01_0010);
     }
 
     #[test]
@@ -623,13 +623,13 @@ mod test {
         ]
         .into_iter()
         .collect::<Walls>();
-        assert_eq!(walls.as_bits(), 0b010010);
+        assert_eq!(walls.as_bits(), 0b01_0010);
     }
 
     #[test]
     fn from_iterator_all_directions() {
         let walls = EdgeDirection::iter().collect::<Walls>();
-        assert_eq!(walls.as_bits(), 0b111111);
+        assert_eq!(walls.as_bits(), 0b11_1111);
     }
 
     // From<[EdgeDirection; N]> tests
@@ -642,13 +642,13 @@ mod test {
     #[test]
     fn from_array_single() {
         let walls = Walls::from([EdgeDirection::FLAT_NORTH]);
-        assert_eq!(walls.as_bits(), 0b010000);
+        assert_eq!(walls.as_bits(), 0b01_0000);
     }
 
     #[test]
     fn from_array_multiple() {
         let walls = Walls::from([EdgeDirection::FLAT_NORTH, EdgeDirection::FLAT_SOUTH]);
-        assert_eq!(walls.as_bits(), 0b010010);
+        assert_eq!(walls.as_bits(), 0b01_0010);
     }
 
     #[test]
@@ -658,7 +658,7 @@ mod test {
             EdgeDirection::FLAT_NORTH,
             EdgeDirection::FLAT_SOUTH,
         ]);
-        assert_eq!(walls.as_bits(), 0b010010);
+        assert_eq!(walls.as_bits(), 0b01_0010);
     }
 
     #[test]
@@ -671,6 +671,6 @@ mod test {
             EdgeDirection::FLAT_SOUTH_WEST,
             EdgeDirection::FLAT_NORTH_WEST,
         ]);
-        assert_eq!(walls.as_bits(), 0b111111);
+        assert_eq!(walls.as_bits(), 0b11_1111);
     }
 }
