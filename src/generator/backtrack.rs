@@ -1,6 +1,6 @@
 use crate::Maze;
 use hexx::{EdgeDirection, Hex};
-use rand::{rngs::StdRng, seq::SliceRandom, thread_rng, Rng, RngCore, SeedableRng};
+use rand::{Rng, SeedableRng, rng, rngs::StdRng, seq::SliceRandom};
 use std::collections::HashSet;
 
 pub(super) fn generate_backtracking(maze: &mut Maze, start_pos: Option<Hex>, seed: Option<u64>) {
@@ -12,9 +12,9 @@ pub(super) fn generate_backtracking(maze: &mut Maze, start_pos: Option<Hex>, see
 
     let mut visited = HashSet::new();
 
-    let mut rng: Box<dyn RngCore> = seed.map_or_else(
-        || Box::new(thread_rng()) as Box<dyn RngCore>,
-        |seed| Box::new(StdRng::seed_from_u64(seed)) as Box<dyn RngCore>,
+    let mut rng: Box<dyn Rng> = seed.map_or_else(
+        || Box::new(rng()) as Box<dyn Rng>,
+        |seed| Box::new(StdRng::seed_from_u64(seed)) as Box<dyn Rng>,
     );
 
     recursive_backtrack(maze, start, &mut visited, &mut rng);
@@ -100,10 +100,11 @@ mod test {
             }
             for dir in EdgeDirection::ALL_DIRECTIONS {
                 let neighbor = current + dir;
-                if let Some(walls) = maze.get_walls(&current) {
-                    if !walls.contains(dir) && maze.get(&neighbor).is_some() {
-                        to_visit.push(neighbor);
-                    }
+                if let Some(walls) = maze.get_walls(&current)
+                    && !walls.contains(dir)
+                    && maze.get(&neighbor).is_some()
+                {
+                    to_visit.push(neighbor);
                 }
             }
         }

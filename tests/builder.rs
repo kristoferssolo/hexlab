@@ -25,10 +25,12 @@ fn builder_without_radius() {
 #[case(Hex::new(1,-1))]
 #[case(Hex::new(-2,1))]
 fn valid_start_position(#[case] start_pos: Hex) {
-    let maze = assert_ok!(MazeBuilder::new()
-        .with_radius(3)
-        .with_start_position(start_pos)
-        .build());
+    let maze = assert_ok!(
+        MazeBuilder::new()
+            .with_radius(3)
+            .with_start_position(start_pos)
+            .build()
+    );
     assert_some!(maze.get(&start_pos));
 }
 
@@ -115,10 +117,12 @@ fn maze_boundaries() {
 fn generate_maze_with_different_types(#[case] generator: GeneratorType) {
     // TODO: Add more generator types when they become available
 
-    let maze = assert_ok!(MazeBuilder::new()
-        .with_radius(3)
-        .with_generator(generator)
-        .build());
+    let maze = assert_ok!(
+        MazeBuilder::new()
+            .with_radius(3)
+            .with_generator(generator)
+            .build()
+    );
 
     assert_gt!(maze.count(), 0);
 }

@@ -5,10 +5,7 @@ use crate::{
 };
 #[cfg(feature = "bevy")]
 use bevy::prelude::*;
-#[cfg(feature = "bevy_reflect")]
-use bevy_utils::HashMap;
 use hexx::{EdgeDirection, Hex};
-#[cfg(not(feature = "bevy_reflect"))]
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 

@@ -80,7 +80,8 @@ impl WorldPositionable for Tile {
     /// - `layout` - The hexagonal layout used for conversion.
     #[inline]
     fn to_vec2(&self, layout: &HexLayout) -> glam::Vec2 {
-        layout.hex_to_world_pos(self.pos)
+        let pos = layout.hex_to_world_pos(self.pos);
+        glam::Vec2::new(pos.x, -pos.y)
     }
 
     /// Converts the tile's position to a 3D vector based on the given layout.
@@ -139,11 +140,11 @@ impl Display for Tile {
 mod test {
     use super::*;
     use hexx::EdgeDirection;
-    use rand::{thread_rng, Rng};
+    use rand::{RngExt, rng};
 
     fn random_hex() -> Hex {
-        let mut rng = thread_rng();
-        Hex::new(rng.gen(), rng.gen())
+        let mut rng = rng();
+        Hex::new(rng.random(), rng.random())
     }
 
     #[test]

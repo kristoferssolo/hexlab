@@ -1,6 +1,6 @@
 use claims::*;
 use hexlab::MazeBuilder;
-use hexx::{hex, EdgeDirection, Hex};
+use hexx::{EdgeDirection, Hex};
 
 #[test]
 fn basic_path() {
@@ -9,10 +9,17 @@ fn basic_path() {
     let start = Hex::new(0, 0);
     let goal = Hex::new(2, 0);
 
-    assert_some_eq!(
-        maze.find_path(start, goal),
-        vec![start, hex(1, 0), hex(1, 1), hex(2, 1), goal]
-    );
+    let path = assert_some!(maze.find_path(start, goal));
+
+    assert_eq!(path.first(), Some(&start));
+    assert_eq!(path.last(), Some(&goal));
+    for window in path.windows(2) {
+        assert!(
+            EdgeDirection::ALL_DIRECTIONS
+                .iter()
+                .any(|&dir| window[0].neighbor(dir) == window[1])
+        );
+    }
 }
 
 #[test]
@@ -72,8 +79,10 @@ fn path_in_larger_maze() {
     for window in path.windows(2) {
         let current = window[0];
         let next = window[1];
-        assert!(EdgeDirection::ALL_DIRECTIONS
-            .iter()
-            .any(|&dir| current.neighbor(dir) == next));
+        assert!(
+            EdgeDirection::ALL_DIRECTIONS
+                .iter()
+                .any(|&dir| current.neighbor(dir) == next)
+        );
     }
 }

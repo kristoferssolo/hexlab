@@ -68,6 +68,6 @@ pub use walls::Walls;
 
 /// Prelude module containing commonly used types
 pub mod prelude {
-    pub use super::{errors::*, traits::*, GeneratorType, Maze, MazeBuilder, Tile, Walls};
+    pub use super::{GeneratorType, Maze, MazeBuilder, Tile, Walls, errors::*, traits::*};
     pub use hexx::{EdgeDirection, Hex, HexLayout};
 }

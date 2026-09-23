@@ -62,10 +62,11 @@ impl Maze {
             {
                 EdgeDirection::ALL_DIRECTIONS.iter().filter_map(|&dir| {
                     let neighbor = pos.neighbor(dir);
-                    if let Some(current_tile) = self.get(pos) {
-                        if self.get(&neighbor).is_some() && !current_tile.walls.contains(dir) {
-                            return Some((neighbor, 1)); // Cost of 1 for each step
-                        }
+                    if let Some(current_tile) = self.get(pos)
+                        && self.get(&neighbor).is_some()
+                        && !current_tile.walls.contains(dir)
+                    {
+                        return Some((neighbor, 1)); // Cost of 1 for each step
                     }
                     None
                 })

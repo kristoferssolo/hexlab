@@ -36,10 +36,11 @@ fn generator_type(
         }
         for dir in EdgeDirection::ALL_DIRECTIONS {
             let neighbor = current + dir;
-            if let Some(walls) = maze.get_walls(&current) {
-                if !walls.contains(dir) && maze.get(&neighbor).is_some() {
-                    to_visit.push(neighbor);
-                }
+            if let Some(walls) = maze.get_walls(&current)
+                && !walls.contains(dir)
+                && maze.get(&neighbor).is_some()
+            {
+                to_visit.push(neighbor);
             }
         }
     }

@@ -1,4 +1,4 @@
-use crate::{errors::MazeBuilderError, GeneratorType, Maze};
+use crate::{GeneratorType, Maze, errors::MazeBuilderError};
 use hexx::Hex;
 
 /// A builder pattern for creating hexagonal mazes.
@@ -156,10 +156,10 @@ impl MazeBuilder {
         let radius = self.radius.ok_or(MazeBuilderError::NoRadius)?;
         let mut maze = create_hex_maze(radius);
 
-        if let Some(start_pos) = self.start_position {
-            if maze.get(&start_pos).is_none() {
-                return Err(MazeBuilderError::InvalidStartPosition(start_pos));
-            }
+        if let Some(start_pos) = self.start_position
+            && maze.get(&start_pos).is_none()
+        {
+            return Err(MazeBuilderError::InvalidStartPosition(start_pos));
         }
 
         if !maze.is_empty() {
