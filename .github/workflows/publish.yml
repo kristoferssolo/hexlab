@@ -1,68 +1,36 @@
 name: Publish
 on:
-  # Trigger this workflow when a tag is pushed in the format `v1.2.3`.
   push:
     tags:
-      # Pattern syntax: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
-      - "v[0-9]+.[0-9]+.[0-9]+*"
-  # Trigger this workflow manually via workflow dispatch.
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version number in the format `v1.2.3`'
-        required: true
-        type: string
+      - 'v*.*.*'
+permissions:
+  contents: read
+env:
+  CARGO_TERM_COLOR: always
 jobs:
-  audit:
-    name: Audit
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions-rust-lang/audit@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-  crates_io_publish:
+  publish:
     name: Publish (crates.io)
-    needs:
-      - audit
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - name: cargo-release Cache
-        id: cargo_release_cache
-        uses: actions/cache@v4
+      - uses: actions/checkout@v7
         with:
-          path: ~/.cargo/bin/cargo-release
-          key: ${{ runner.os }}-cargo-release
-      - run: cargo install cargo-release
-        if: steps.cargo_release_cache.outputs.cache-hit != 'true'
-      - name: cargo login
-        run: cargo login ${{ secrets.CRATES_IO_API_TOKEN }}
-      # Publishing is currently messy, because:
-      #
-      # * `peace_rt_model_core` exports `NativeError` or `WebError` depending on the target.
-      # * `peace_rt_model_web` fails to build when publishing the workspace for a native target.
-      # * `peace_rt_model_web` still needs its dependencies to be published before it can be
-      #    published.
-      # * `peace_rt_model_hack` needs `peace_rt_model_web` to be published before it can be
-      #    published.
-      #
-      # We *could* pass through `--no-verify` so `cargo` doesn't build the crate before publishing,
-      # which is reasonable, since this job only runs after the Linux, Windows, and WASM builds
-      # have passed.
-      - name: "cargo release publish"
-        # allow-branch HEAD is because GitHub actions switches
-        # to the tag while building, which is a detached head
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Check release version
+        shell: bash
+        run: |
+          if [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "Expected a tag in the form vX.Y.Z: $GITHUB_REF_NAME" >&2
+              exit 1
+          fi
 
-        run: |-
-          cargo release \
-            publish \
-            --workspace \
-            --all-features \
-            --allow-branch HEAD \
-            --no-confirm \
-            --no-verify \
-            --execute
+          package_version=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "hexlab") | .version')
+          if [[ "v$package_version" != "$GITHUB_REF_NAME" ]]; then
+              echo "Tag $GITHUB_REF_NAME does not match Cargo.toml version $package_version" >&2
+              exit 1
+          fi
+      - name: Publish
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_API_TOKEN }}
+        run: cargo publish --locked --all-features
