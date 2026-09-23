@@ -23,7 +23,7 @@ hexx = { version = "0.25" }
 rand = "0.10"
 serde = { version = "1.0", features = ["derive"], optional = true }
 thiserror = "2.0"
-bevy = { version = "0.19", optional = true }
+bevy = { version = "0.19", default-features = false, optional = true }
 glam = { version = "0.33", optional = true }
 pathfinding = { version = "4.16", optional = true }
 
@@ -31,7 +31,7 @@ pathfinding = { version = "4.16", optional = true }
 version = "0.19"
 optional = true
 default-features = false
-features = ["glam"]
+features = ["glam", "std"]
 
 [dev-dependencies]
 claims = "0.8"
